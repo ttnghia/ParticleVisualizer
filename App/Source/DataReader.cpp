@@ -11,7 +11,6 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-#include <LibParticle/ParticleSerialization.h>
 #include <LibQtApps/AvgTimer.h>
 #include <LibOpenGL/LightAndMaterialData.h>
 
@@ -29,9 +28,6 @@
 DataReader::DataReader(const SharedPtr<VisualizationData>& vizData) : m_VizData(vizData),
     m_ReadTimer(std::make_shared<AvgTimer>()), m_AutoTimer(std::make_shared<QTimer>(this)) {
     __NT_REQUIRE(vizData != nullptr);
-    for(int vizType = 0; vizType < VisualizationType::nParticleTypes(); ++vizType) {
-        m_DataReader[vizType] = std::make_shared<ParticleSerialization>();
-    }
     ////////////////////////////////////////////////////////////////////////////////
     connect(m_DataDirWatcher,  &QFileSystemWatcher::directoryChanged, this, &DataReader::countFrames);
     connect(m_AutoTimer.get(), &QTimer::timeout,                      this, &DataReader::readNextFrameByTimer);
@@ -39,28 +35,37 @@ DataReader::DataReader(const SharedPtr<VisualizationData>& vizData) : m_VizData(
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void DataReader::setInputPath(const QString& dataPath) {
-    if(checkDataFolder(dataPath)) {
+void DataReader::setSequenceFile(const QString& filePath) {
+    if(checkDataFolder(filePath)) {
         resetData();
         for(int vizType = 0; vizType < VisualizationType::nParticleTypes(); ++vizType) {
-            auto vizTypeFolder = dataPath.toStdString() + String("/FrameOutput/") + VizNames[vizType];
+            auto vizTypeFolder = filePath.toStdString() + String("/FrameOutput/") + VizNames[vizType];
             if(FileHelpers::fileExisted(vizTypeFolder)) {
-                m_DataReader[vizType]->setDataPath(dataPath.toStdString(), String("FrameOutput/") + VizNames[vizType], "frame");
-                m_DataAvailability[vizType] = true;
+                m_DataReader[vizType]->setDataPath(filePath.toStdString(), String("FrameOutput/") + VizNames[vizType], "frame");
                 m_DataDirWatcher->addPath(QString::fromStdString(vizTypeFolder));
                 m_WatchingPaths.append(QString::fromStdString(vizTypeFolder));
             }
         }
-        m_CurrentDataPath = dataPath;
-        m_DataDirWatcher->addPath(dataPath);
+        m_DataSequencePrefix = filePath;
+        m_DataDirWatcher->addPath(filePath);
         m_bValidDataPath = true;
         countFrames();
-        emit inputPathAccepted(dataPath);
+        emit inputPathAccepted(filePath);
     }
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 bool DataReader::checkDataFolder(const QString& dataPath) {
+    QDir dataDir(dataPath);
+    dataDir.setNameFilters(QStringList() << "*.json");
+    if(dataDir.entryList().count() == 0) {
+        return false;
+    }
+    return true;
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+QString DataReader::getParentDataFolder() {
     QDir dataDir(dataPath);
     dataDir.setNameFilters(QStringList() << "*.json");
     if(dataDir.entryList().count() == 0) {
@@ -92,7 +97,7 @@ void DataReader::resetData() {
 void DataReader::countFrames() {
     m_nFrames = 0;
     for(int vizType = 0; vizType < VisualizationType::nParticleTypes(); ++vizType) {
-        auto vizTypeFolder = m_CurrentDataPath.toStdString() + String("/FrameOutput/") + VizNames[vizType];
+        auto vizTypeFolder = m_DataSequencePrefix.toStdString() + String("/FrameOutput/") + VizNames[vizType];
         if(m_DataAvailability[vizType]) {
             try {
                 auto frames = static_cast<int>(FileHelpers::countFiles(vizTypeFolder));

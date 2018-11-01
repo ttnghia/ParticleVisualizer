@@ -28,24 +28,34 @@ class DataReader : public QObject {
     Q_OBJECT
 public:
     DataReader(const SharedPtr<VisualizationData>& vizData);
-    void setInputPath(const QString& dataPath);
-    void refresh() { setInputPath(m_CurrentDataPath); }
+    void setSequenceFile(const QString& filePath);
+    void refresh() { setSequenceFile(m_DataSequencePrefix); }
 
 signals:
     void inputPathAccepted(const QString& dataPath);
 private slots:
     void countFrames();
 private:
-    void resetData();
-    bool checkDataFolder(const QString& dataPath);
+
+    void    resetData();
+    bool    checkDataFolder(const QString& dataPath);
+    QString getParentDataFolder(const QString& dataPath);
     ////////////////////////////////////////////////////////////////////////////////
-    bool                             m_bValidDataPath = false;
-    QFileSystemWatcher*              m_DataDirWatcher = new QFileSystemWatcher;
-    SharedPtr<ParticleSerialization> m_DataReader[VisualizationType::nParticleTypes()];
-    bool                             m_DataAvailability[VisualizationType::nParticleTypes()];
+    enum EnumerateTypes {
+        Width3_NoPrefix,
+        Width3_0Prefix,
+        Width4_NoPrefix,
+        Width4_0Prefix
+    };
+    enum DataFileExtensions { BIN, BGEO };
+    ////////////////////////////////////////////////////////////////////////////////
+    EnumerateTypes      m_EnumerateType  = Width4_0Prefix;
+    DataFileExtensions  m_FileExtension  = DataFileExtensions::BGEO;
+    bool                m_bValidDataPath = false;
+    QFileSystemWatcher* m_DataDirWatcher = new QFileSystemWatcher;
 
     SharedPtr<VisualizationData> m_VizData;
-    QString                      m_CurrentDataPath;
+    QString                      m_DataSequencePrefix;
     QStringList                  m_WatchingPaths;
     ////////////////////////////////////////////////////////////////////////////////
 

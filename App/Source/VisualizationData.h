@@ -21,30 +21,8 @@ struct RenderColorMode {
         UniformColor = 0,
         Random,
         Ramp,
-        ObjectIndex,
         NumColorModes
     };
-};
-
-struct VisualizationType {
-    enum {
-        StandardMPMParticle = 0,
-        VertexParticle,
-        QuadratureParticle,
-        GhostBoundaryParticle,
-        TriangleMesh,
-        ParticleOrientation
-    };
-    static constexpr int nParticleTypes() { return 4; }
-    static constexpr int nVisualizationTypes() { return 6; }
-};
-
-static inline std::map<int, String> VizNames = {
-    { VisualizationType::StandardMPMParticle, "StandardParticle" },
-    { VisualizationType::VertexParticle, "VertexParticle" },
-    { VisualizationType::QuadratureParticle, "QuadParticle" },
-    { VisualizationType::GhostBoundaryParticle, "GhostParticle" },
-    { VisualizationType::TriangleMesh, "Mesh" }
 };
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -54,25 +32,10 @@ static inline Vec3f DefaultCameraFocus    = Vec3f(0, -0.2, 0);
 static inline Vec4f DefaultLight0Position = Vec4f(-10, 20, 10, 1);
 static inline Vec4f DefaultLight1Position = Vec4f(10, -20, -10, 1);
 
-static inline std::map<int, MaterialData> DefaultRenderMaterials = {
-    { VisualizationType::StandardMPMParticle, { Vec4f(0.05f, 0.05f, 0.05f, 1.0f),
-                                                Vec4f(1.0f,    0, 0.5f, 1.0f),
-                                                Vec4f(1.0f, 1.0f, 1.0f, 1.0f),
-                                                200.0f,      "CustomMaterial" } },
-    { VisualizationType::VertexParticle, { Vec4f(0.05f, 0.05f, 0.05f, 1.0f),
-                                           Vec4f(1.0f,    0,    0, 1.0f),
-                                           Vec4f(1.0f, 1.0f, 1.0f, 1.0f),
-                                           200.0f,      "CustomMaterial" } },
-    { VisualizationType::QuadratureParticle, { Vec4f(0.05f, 0.05f, 0.05f, 1.0f),
-                                               Vec4f(   0,    0,    1, 1.0f),
-                                               Vec4f(1.0f, 1.0f, 1.0f, 1.0f),
-                                               200.0f,      "CustomMaterial" } },
-    { VisualizationType::GhostBoundaryParticle, { Vec4f(0.15f, 0.15f, 0.15f, 1.0f),
-                                                  Vec4f(0.392f,    0,    0, 1.0f),
-                                                  Vec4f(  0.5f, 0.5f, 0.5f, 1.0f),
-                                                  200.0f,      "CustomMaterial" } },
-    { VisualizationType::TriangleMesh, BuildInMaterials::MT_Brass }
-};
+static inline MaterialData DefaultRenderMaterial = { Vec4f(0.05f, 0.05f, 0.05f, 1.0f),
+                                                     Vec4f(1.0f,    0, 0.5f, 1.0f),
+                                                     Vec4f(1.0f, 1.0f, 1.0f, 1.0f),
+                                                     200.0f,      "CustomMaterial" };
 } // end namespace DefaultVisualizationParameters
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -96,25 +59,14 @@ struct VisualizationData {
 
     ////////////////////////////////////////////////////////////////////////////////
     // visualization data
-    char*                orientationPtr;
-    std::map<Int, char*> particlePositionPtrs;
-    std::map<Int, char*> objectIndexPtrs;
-    std::map<Int, UInt>  nParticles;
-    std::map<Int, UInt>  nObjects;
-    float                particleRadius;
+    char* particlePositionPtrs;
+    UInt  nParticles;
+    float particleRadius;
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
     // buffer, only used if needed
-    std::map<Int, StdVT_Vec4f>  buffsOrientation;
-    std::map<Int, StdVT_Vec2f>  buffsPositions2D;
-    std::map<Int, StdVT_Vec3f>  buffsPositions3D;
-    std::map<Int, StdVT_UInt16> buffsObjectIndex;
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // mesh data
-    // todo
+    StdVT_Char buffPositions;
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -139,25 +91,10 @@ struct VisualizationData {
         lights[0].position = DefaultVisualizationParameters::DefaultLight0Position;
         lights[1].position = DefaultVisualizationParameters::DefaultLight1Position;
         ////////////////////////////////////////////////////////////////////////////////
-        particleRadius = 0;
-        orientationPtr = nullptr;
-        particlePositionPtrs.clear();
-        objectIndexPtrs.clear();
-        nParticles.clear();
-        nObjects.clear();
-        ////////////////////////////////////////////////////////////////////////////////
-        for(auto& [vizType, buffer]: buffsOrientation) {
-            buffer.resize(0);
-        }
-        for(auto& [vizType, buffer]: buffsPositions2D) {
-            buffer.resize(0);
-        }
-        for(auto& [vizType, buffer]: buffsPositions3D) {
-            buffer.resize(0);
-        }
-        for(auto& [vizType, buffer]: buffsObjectIndex) {
-            buffer.resize(0);
-        }
+        particleRadius       = 0;
+        nParticles           = 0;
+        particlePositionPtrs = nullptr;
+        buffPositions.resize(0);
         ////////////////////////////////////////////////////////////////////////////////
         bVizDataUploaded   = false;
         bCaptureImageSaved = true;

@@ -124,7 +124,7 @@ void MainWindow::updateStatusCurrentFrame(int currentFrame) {
     m_lblStatusCurrentFrame->setText(QString("Current frame: %1").arg(currentFrame));
 }
 
-void MainWindow::updateStatusNumVizPrimitives() {
+void MainWindow::updateStatusNumParticles() {
     String status("Num. primitives: ");
     for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes() - 1; ++vizType) {
         status += Formatters::toString(m_RenderWidget->getVizData()->nParticles[vizType]);
@@ -209,7 +209,7 @@ void MainWindow::connectWidgets() {
     connect(m_DataReader, &DataReader::currentFrameChanged,     this,           &MainWindow::updateStatusCurrentFrame);
     connect(m_DataReader, &DataReader::numFramesChanged,        this,           &MainWindow::updateNumFrames);
     connect(m_DataReader, &DataReader::frameReadInfoChanged,    this,           &MainWindow::updateStatusReadInfo);
-    connect(m_DataReader, &DataReader::numVizPrimitivesChanged, this,           &MainWindow::updateStatusNumVizPrimitives);
+    connect(m_DataReader, &DataReader::numVizPrimitivesChanged, this,           &MainWindow::updateStatusNumParticles);
     connect(m_DataReader, &DataReader::inputPathAccepted,       this,           &MainWindow::updateWindowTitle);
     connect(m_DataReader, &DataReader::systemDimensionChanged,  m_RenderWidget, &RenderWidget::updateSystemDimension);
     connect(m_DataReader, &DataReader::vizDataChanged,          m_RenderWidget, &RenderWidget::updateVizData);

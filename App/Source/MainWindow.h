@@ -30,7 +30,7 @@ protected:
 public slots:
     void updateWindowTitle(const QString& filePath);
     void updateStatusCurrentFrame(int currentFrame);
-    void updateStatusNumVizPrimitives();
+    void updateStatusNumParticles();
     void updateNumFrames(int numFrames);
     void updateStatusReadInfo(double readTime, size_t bytes);
     void updateStatusMemoryUsage();

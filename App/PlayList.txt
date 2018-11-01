@@ -1,0 +1,6 @@
+../Simulation/Output/HairBall
+../Simulation/Output/2D_SandSphere
+../Simulation/Output/2D_StrandsCollision
+../Simulation/Output/3D_HairBall
+../Simulation/Output/3D_HairBall_Large
+../Simulation/Output/3D_HairBall_Small

@@ -1,13 +1,13 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//        __  __        _        __  ___ ____   __  ___
-//       / / / /____ _ (_)_____ /  |/  // __ \ /  |/  /
-//      / /_/ // __ `// // ___// /|_/ // /_/ // /|_/ /
-//     / __  // /_/ // // /   / /  / // ____// /  / /
-//    /_/ /_/ \__,_//_//_/   /_/  /_//_/    /_/  /_/
+// ______          _   _      _        _   _ _                 _ _
+// | ___ \        | | (_)    | |      | | | (_)               | (_)
+// | |_/ /_ _ _ __| |_ _  ___| | ___  | | | |_ ___ _   _  __ _| |_ _______ _ __
+// |  __/ _` | '__| __| |/ __| |/ _ \ | | | | / __| | | |/ _` | | |_  / _ \ '__|
+// | | | (_| | |  | |_| | (__| |  __/ \ \_/ / \__ \ |_| | (_| | | |/ /  __/ |
+// \_|  \__,_|_|   \__|_|\___|_|\___|  \___/|_|___/\__,_|\__,_|_|_/___\___|_|
 //
-//    This file is part of HairMPM - Material Point Method for Hair Simulation.
-//    Created: 2018. All rights reserved.
+// Created: Nov. 2018 by NT (https://ttnghia.github.io). All rights reserved.
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -22,7 +22,6 @@
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 RenderWidget::RenderWidget(QWidget* parent) : OpenGLWidget(parent) {
-    Q_INIT_RESOURCE(Shader);
     updateCamera();
     for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes(); ++vizType) {
         m_bRender[vizType] = (vizType != VisualizationType::ParticleOrientation); // only disable rendering for orientation
@@ -33,8 +32,6 @@ RenderWidget::RenderWidget(QWidget* parent) : OpenGLWidget(parent) {
 void RenderWidget::initOpenGL() {
     initMaterials();
     initRDataParticle();
-    initRDataOrientation();
-    initRDataMesh();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -45,8 +42,6 @@ void RenderWidget::resizeOpenGLWindow(int, int height) {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void RenderWidget::renderOpenGL() {
     renderParticles();
-    renderOrientations();
-    renderMesh();
     ////////////////////////////////////////////////////////////////////////////////
     if(m_VizData->bCaptureImage && m_VizData->bVizDataUploaded && !m_VizData->bCaptureImageSaved) {
         this->exportScreenToImage(m_VizData->currentFrame);
@@ -80,7 +75,6 @@ void RenderWidget::updateSystemDimension() {
 
     makeCurrent();
     initParticleVAO();
-    initOrientationVAO();
     doneCurrent();
 }
 
@@ -103,22 +97,7 @@ void RenderWidget::updateVizData() {
         }
         m_RDataParticle[vizType].nParticles = m_VizData->nParticles[vizType];
     }
-    if(m_bRender[VisualizationType::ParticleOrientation]) {
-        Q_ASSERT(m_RDataOrientation.bInitialized);
-        auto quadType = VisualizationType::QuadratureParticle;
-        if(m_VizData->nParticles[quadType] > 0) {
-            if(!m_bRender[quadType]) {
-                size_t dataSize = m_VizData->nParticles[quadType] * m_VizData->systemDimension * sizeof(float);
-                Q_ASSERT(m_VizData->particlePositionPtrs[quadType] != nullptr);
-                m_RDataParticle[quadType].buffPosition->uploadDataAsync(m_VizData->particlePositionPtrs[quadType], 0, dataSize);
-            }
-            m_RDataParticle[quadType].nParticles = m_VizData->nParticles[quadType];
-            ////////////////////////////////////////////////////////////////////////////////
-            size_t dataSize = m_VizData->nParticles[quadType] * sizeof(Vec4f);
-            Q_ASSERT(m_VizData->orientationPtr != nullptr);
-            m_RDataOrientation.buffOrientation->uploadDataAsync(m_VizData->orientationPtr, 0, dataSize);
-        }
-    }
+
     doneCurrent();
     m_ParticleRadius = m_VizData->particleRadius;
     m_VizData->bVizDataUploaded = true;
@@ -298,76 +277,3 @@ void RenderWidget::renderParticles() {
         m_RDataParticle[vizType].shader->release();
     }
 }
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void RenderWidget::initRDataOrientation() {
-    m_RDataOrientation.shader = std::make_shared<QtAppShaderProgram>("RenderOrientations");
-    m_RDataOrientation.shader->addVertexShaderFromResource(":/Shaders/orientation.vs.glsl");
-    m_RDataOrientation.shader->addFragmentShaderFromResource(":/Shaders/orientation.fs.glsl");
-    m_RDataOrientation.shader->addGeometryShaderFromResource(":/Shaders/orientation.gs.glsl");
-    m_RDataOrientation.shader->link();
-    ////////////////////////////////////////////////////////////////////////////////
-    m_RDataOrientation.v_Position     = m_RDataOrientation.shader->getAtributeLocation("v_Position");
-    m_RDataOrientation.v_Orientation  = m_RDataOrientation.shader->getAtributeLocation("v_Orientation");
-    m_RDataOrientation.u_PointRadius  = m_RDataOrientation.shader->getUniformLocation("u_PointRadius");
-    m_RDataOrientation.u_ScreenWidth  = m_RDataOrientation.shader->getUniformLocation("u_ScreenWidth");
-    m_RDataOrientation.u_ScreenHeight = m_RDataOrientation.shader->getUniformLocation("u_ScreenHeight");
-    ////////////////////////////////////////////////////////////////////////////////
-    m_RDataOrientation.ub_CamData      = m_RDataOrientation.shader->getUniformBlockIndex("CameraData");
-    m_RDataOrientation.buffOrientation = std::make_shared<OpenGLBuffer>();
-    m_RDataOrientation.buffOrientation->createBuffer(GL_ARRAY_BUFFER, 1, nullptr, GL_DYNAMIC_DRAW);
-    ////////////////////////////////////////////////////////////////////////////////
-    m_RDataOrientation.bInitialized = true;
-    initOrientationVAO();
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void RenderWidget::initOrientationVAO() {
-    Q_ASSERT(m_RDataOrientation.bInitialized);
-    Q_ASSERT(m_RDataParticle[VisualizationType::QuadratureParticle].buffPosition != nullptr && m_RDataOrientation.buffOrientation != nullptr);
-    glCall(glGenVertexArrays(1, &m_RDataOrientation.VAO));
-    glCall(glBindVertexArray(m_RDataOrientation.VAO));
-    ////////////////////////////////////////////////////////////////////////////////
-    m_RDataParticle[VisualizationType::QuadratureParticle].buffPosition->bind();
-    glCall(glEnableVertexAttribArray(m_RDataOrientation.v_Position));
-    glCall(glVertexAttribPointer(m_RDataOrientation.v_Position, m_VizData->systemDimension, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid*>(0)));
-    ////////////////////////////////////////////////////////////////////////////////
-    m_RDataOrientation.buffOrientation->bind();
-    glCall(glEnableVertexAttribArray(m_RDataOrientation.v_Orientation));
-    glCall(glVertexAttribPointer(m_RDataOrientation.v_Orientation, 4, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid*>(0)));
-    ////////////////////////////////////////////////////////////////////////////////
-    glCall(glBindVertexArray(0));
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void RenderWidget::renderOrientations() {
-    Q_ASSERT(m_RDataOrientation.bInitialized);
-    if(!m_bRender[VisualizationType::ParticleOrientation] || m_RDataParticle[VisualizationType::QuadratureParticle].nParticles == 0) {
-        return;
-    }
-    m_RDataOrientation.shader->bind();
-    ////////////////////////////////////////////////////////////////////////////////
-    m_UBufferCamData->bindBufferBase();
-    m_RDataOrientation.shader->bindUniformBlock(m_RDataOrientation.ub_CamData, m_UBufferCamData->getBindingPoint());
-    m_RDataOrientation.shader->setUniformValue(m_RDataOrientation.u_PointRadius,  m_ParticleRadius);
-    m_RDataOrientation.shader->setUniformValue(m_RDataOrientation.u_ScreenHeight, height());
-    m_RDataOrientation.shader->setUniformValue(m_RDataOrientation.u_ScreenHeight, height());
-    ////////////////////////////////////////////////////////////////////////////////
-    glCall(glBindVertexArray(m_RDataOrientation.VAO));
-    glCall(glDrawArrays(GL_POINTS, 0, m_RDataParticle[VisualizationType::QuadratureParticle].nParticles));
-    ////////////////////////////////////////////////////////////////////////////////
-    glCall(glBindVertexArray(0));
-    m_RDataOrientation.shader->release();
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void RenderWidget::initRDataMesh()
-{}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void RenderWidget::initMeshVAO()
-{}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void RenderWidget::renderMesh()
-{}

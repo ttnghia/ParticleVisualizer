@@ -1,13 +1,13 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-//        __  __        _        __  ___ ____   __  ___
-//       / / / /____ _ (_)_____ /  |/  // __ \ /  |/  /
-//      / /_/ // __ `// // ___// /|_/ // /_/ // /|_/ /
-//     / __  // /_/ // // /   / /  / // ____// /  / /
-//    /_/ /_/ \__,_//_//_/   /_/  /_//_/    /_/  /_/
+// ______          _   _      _        _   _ _                 _ _
+// | ___ \        | | (_)    | |      | | | (_)               | (_)
+// | |_/ /_ _ _ __| |_ _  ___| | ___  | | | |_ ___ _   _  __ _| |_ _______ _ __
+// |  __/ _` | '__| __| |/ __| |/ _ \ | | | | / __| | | |/ _` | | |_  / _ \ '__|
+// | | | (_| | |  | |_| | (__| |  __/ \ \_/ / \__ \ |_| | (_| | | |/ /  __/ |
+// \_|  \__,_|_|   \__|_|\___|_|\___|  \___/|_|___/\__,_|\__,_|_|_/___\___|_|
 //
-//    This file is part of HairMPM - Material Point Method for Hair Simulation.
-//    Created: 2018. All rights reserved.
+// Created: Nov. 2018 by NT (https://ttnghia.github.io). All rights reserved.
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
@@ -91,29 +91,4 @@ protected:
     void initRDataParticle();
     void initParticleVAO();
     void renderParticles();
-    ////////////////////////////////////////////////////////////////////////////////
-    struct RDataOrientation {
-        SharedPtr<QtAppShaderProgram> shader          = nullptr;
-        SharedPtr<OpenGLBuffer>       buffOrientation = nullptr;
-
-        GLuint VAO;
-        GLint  v_Position;
-        GLint  v_Orientation;
-        GLuint u_PointRadius;
-        GLuint u_ScreenWidth;
-        GLuint u_ScreenHeight;
-        GLuint ub_CamData;
-        bool   bInitialized = false;
-    } m_RDataOrientation;
-
-    void initRDataOrientation();
-    void initOrientationVAO();
-    void renderOrientations();
-    ////////////////////////////////////////////////////////////////////////////////
-    struct RDataMesh {
-        bool bInitialized = false;
-    } m_RDataMesh;
-    void initRDataMesh();
-    void initMeshVAO();
-    void renderMesh();
 };

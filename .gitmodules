@@ -1,0 +1,12 @@
+[submodule "Externals/LibCommon"]
+	path = Externals/LibCommon
+	url = https://github.com/NTCodeBase/LibCommon.git
+[submodule "Externals/LibParticle"]
+	path = Externals/LibParticle
+	url = https://github.com/NTCodeBase/LibParticle.git
+[submodule "Externals/LibQtApps"]
+	path = Externals/LibQtApps
+	url = https://github.com/NTCodeBase/LibQtApps.git
+[submodule "Externals/LibOpenGL"]
+	path = Externals/LibOpenGL
+	url = https://github.com/NTCodeBase/LibOpenGL.git

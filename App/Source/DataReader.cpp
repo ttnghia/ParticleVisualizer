@@ -56,15 +56,24 @@ void DataReader::setSequenceFile(const QString& filePath) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 bool DataReader::analyzeSequence(const QString& sampleFileName) {
-    return true;
-}
+    QFileInfo file(sampleFileName);
 
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-QString DataReader::getParentDataFolder() {
-    QDir dataDir(dataPath);
-    dataDir.setNameFilters(QStringList() << "*.json");
-    if(dataDir.entryList().count() == 0) {
-        return false;
+    auto prefix    = file.dir() + QString("/") + file.baseName();
+    auto extension = file.suffix();
+    qDebug() << prefix << extension;
+
+    if(suffix.toUpper() == "BIN") {
+        m_FileExtension = DataFileExtensions::BIN;
+    } else if(suffix.toUpper() == "BGEO") {
+        m_FileExtension = DataFileExtensions::BGEO;
+    } else if(suffix.toUpper() == "OBJ") {
+        m_FileExtension = DataFileExtensions::OBJ;
+    } else {
+        return false; // wrong file extension
+    }
+    auto baseName = file.baseName();
+    if(baseName + QString(".%4d.") + extension == file.fileName()) {
+        m_EnumerateType = EnumerateTypes::Width4_0Prefix;
     }
     return true;
 }

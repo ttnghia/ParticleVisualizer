@@ -37,18 +37,15 @@ private slots:
     void countFrames();
 private:
 
-    void    resetData();
-    bool    checkDataFolder(const QString& dataPath);
-    bool    analyzeSequence(const QString& sampleFileName);
-    QString getParentDataFolder(const QString& dataPath);
+    void resetData();
+    bool analyzeSequence(const QString& sampleFileName);
     ////////////////////////////////////////////////////////////////////////////////
-    enum EnumerateTypes {
-        Width3_NoPrefix,
+    enum class EnumerateTypes {
+        NoPrefix,
         Width3_0Prefix,
-        Width4_NoPrefix,
         Width4_0Prefix
     };
-    enum DataFileExtensions { BIN, BGEO, OBJ };
+    enum class DataFileExtensions { BIN, BGEO, OBJ };
     ////////////////////////////////////////////////////////////////////////////////
     EnumerateTypes      m_EnumerateType  = Width4_0Prefix;
     DataFileExtensions  m_FileExtension  = DataFileExtensions::BGEO;

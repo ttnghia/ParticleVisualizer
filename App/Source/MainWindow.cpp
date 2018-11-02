@@ -125,13 +125,7 @@ void MainWindow::updateStatusCurrentFrame(int currentFrame) {
 }
 
 void MainWindow::updateStatusNumParticles() {
-    String status("Num. primitives: ");
-    for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes() - 1; ++vizType) {
-        status += Formatters::toString(m_RenderWidget->getVizData()->nParticles[vizType]);
-        if(vizType < VisualizationType::nVisualizationTypes() - 2) {
-            status += String(" | ");
-        }
-    }
+    String status = String("Num. primitives: ") + Formatters::toString(m_RenderWidget->getVizData()->nParticles);
     m_lblStatusNumVizPrimitives->setText(QString::fromStdString(status));
 }
 

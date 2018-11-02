@@ -39,6 +39,7 @@ private:
 
     void    resetData();
     bool    checkDataFolder(const QString& dataPath);
+    bool    analyzeSequence(const QString& sampleFileName);
     QString getParentDataFolder(const QString& dataPath);
     ////////////////////////////////////////////////////////////////////////////////
     enum EnumerateTypes {
@@ -47,7 +48,7 @@ private:
         Width4_NoPrefix,
         Width4_0Prefix
     };
-    enum DataFileExtensions { BIN, BGEO };
+    enum DataFileExtensions { BIN, BGEO, OBJ };
     ////////////////////////////////////////////////////////////////////////////////
     EnumerateTypes      m_EnumerateType  = Width4_0Prefix;
     DataFileExtensions  m_FileExtension  = DataFileExtensions::BGEO;
@@ -101,10 +102,4 @@ public slots:
     void setParticleColorMode(int colorMode) { m_ColorMode = colorMode; }
 private:
     std::pair<bool, size_t> readFrameData(int frameID);
-    QStringList m_DataList;
-    int         m_ColorMode = RenderColorMode::Ramp;
-
-    static inline const StdVT<String> s_lstAttrPosition       = { "dimension", "particle_radius", "particle_position" };
-    static inline const StdVT<String> s_lstAttrPositionObjIdx = { "dimension", "particle_radius", "particle_position", "object_index", "NObjects" };
-    ////////////////////////////////////////////////////////////////////////////////
 };

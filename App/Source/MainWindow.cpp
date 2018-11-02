@@ -204,7 +204,7 @@ void MainWindow::connectWidgets() {
     connect(m_DataReader, &DataReader::numFramesChanged,        this,           &MainWindow::updateNumFrames);
     connect(m_DataReader, &DataReader::frameReadInfoChanged,    this,           &MainWindow::updateStatusReadInfo);
     connect(m_DataReader, &DataReader::numVizPrimitivesChanged, this,           &MainWindow::updateStatusNumParticles);
-    connect(m_DataReader, &DataReader::inputPathAccepted,       this,           &MainWindow::updateWindowTitle);
+    connect(m_DataReader, &DataReader::inputSequenceAccepted,       this,           &MainWindow::updateWindowTitle);
     connect(m_DataReader, &DataReader::systemDimensionChanged,  m_RenderWidget, &RenderWidget::updateSystemDimension);
     connect(m_DataReader, &DataReader::vizDataChanged,          m_RenderWidget, &RenderWidget::updateVizData);
     ////////////////////////////////////////////////////////////////////////////////

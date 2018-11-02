@@ -28,11 +28,11 @@ class DataReader : public QObject {
     Q_OBJECT
 public:
     DataReader(const SharedPtr<VisualizationData>& vizData);
-    void setSequenceFile(const QString& filePath);
-    void refresh() { setSequenceFile(m_DataSequencePrefix); }
+    void setSequenceFile(const QString& sampleFileName);
+    void refresh() { setSequenceFile(m_SampleFileName); }
 
 signals:
-    void inputPathAccepted(const QString& dataPath);
+    void inputSequenceAccepted(const QString& dataPath);
 private slots:
     void countFrames();
 private:
@@ -47,14 +47,14 @@ private:
     };
     enum class DataFileExtensions { BIN, BGEO, OBJ };
     ////////////////////////////////////////////////////////////////////////////////
-    EnumerateTypes      m_EnumerateType  = Width4_0Prefix;
+    EnumerateTypes      m_EnumerateType  = EnumerateTypes::NoPrefix;
     DataFileExtensions  m_FileExtension  = DataFileExtensions::BGEO;
     bool                m_bValidDataPath = false;
     QFileSystemWatcher* m_DataDirWatcher = new QFileSystemWatcher;
 
     SharedPtr<VisualizationData> m_VizData;
+    QString                      m_SampleFileName;
     QString                      m_DataSequencePrefix;
-    QStringList                  m_WatchingPaths;
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -92,11 +92,8 @@ private:
     ////////////////////////////////////////////////////////////////////////////////
     // viz primitives
 signals:
-    void systemDimensionChanged();
     void numVizPrimitivesChanged();
     void vizDataChanged(int currentFrame);
-public slots:
-    void setParticleColorMode(int colorMode) { m_ColorMode = colorMode; }
 private:
     std::pair<bool, size_t> readFrameData(int frameID);
 };

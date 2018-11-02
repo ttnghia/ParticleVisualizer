@@ -291,7 +291,7 @@ void Controller::connectWidgets() {
     ////////////////////////////////////////////////////////////////////////////////
     // data path
     connect(m_InputPath,  &BrowsePathWidget::pathChanged, m_DataReader, &DataReader::setSequenceFile);
-    connect(m_DataReader, &DataReader::inputPathAccepted, [&](const QString& dataPath) {
+    connect(m_DataReader, &DataReader::inputSequenceAccepted, [&](const QString& dataPath) {
                 m_btnPause->setChecked(false);
                 ////////////////////////////////////////////////////////////////////////////////
                 QDir dataDir(dataPath);

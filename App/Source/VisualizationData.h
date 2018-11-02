@@ -66,7 +66,8 @@ struct VisualizationData {
 
     ////////////////////////////////////////////////////////////////////////////////
     // buffer, only used if needed
-    StdVT_Char buffPositions;
+    StdVT_Vec2f buffPositions2D;
+    StdVT_Vec3f buffPositions3D;
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -94,7 +95,8 @@ struct VisualizationData {
         particleRadius       = 0;
         nParticles           = 0;
         particlePositionPtrs = nullptr;
-        buffPositions.resize(0);
+        buffPositions2D.resize(0);
+        buffPositions3D.resize(0);
         ////////////////////////////////////////////////////////////////////////////////
         bVizDataUploaded   = false;
         bCaptureImageSaved = true;

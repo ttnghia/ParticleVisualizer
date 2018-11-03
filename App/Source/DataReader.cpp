@@ -22,6 +22,7 @@
 
 #include <fstream>
 #include <QDir>
+#include <QDebug>
 
 #include "DataReader.h"
 #include "VisualizationData.h"
@@ -34,6 +35,8 @@ DataReader::DataReader(const SharedPtr<VisualizationData>& vizData) : m_VizData(
     connect(m_DataDirWatcher,  &QFileSystemWatcher::directoryChanged, this, &DataReader::countFrames);
     connect(m_AutoTimer.get(), &QTimer::timeout,                      this, &DataReader::readNextFrameByTimer);
     m_AutoTimer->start(0);
+
+    analyzeSequence("D:/program/simulationframe.0001.bgeo");
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -41,7 +44,7 @@ void DataReader::setSequenceFile(const QString& sampleFileName) {
     if(analyzeSequence(sampleFileName)) {
         resetData();
         auto dataFolder = QFileInfo(sampleFileName).dir();
-        m_DataDirWatcher->addPath(dataFolder.fileName());
+        m_DataDirWatcher->addPath(dataFolder.absolutePath());
         m_bValidDataPath = true;
         countFrames();
         emit inputSequenceAccepted(sampleFileName);
@@ -50,24 +53,34 @@ void DataReader::setSequenceFile(const QString& sampleFileName) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 bool DataReader::analyzeSequence(const QString& sampleFileName) {
-    QFileInfo file(sampleFileName);
-
-    auto prefix    = file.dir() + QString("/") + file.baseName();
+    auto file      = QFileInfo(sampleFileName);
+    auto prefix    = file.dir().absolutePath().replace("\\\\", "/") + QString("/") + file.baseName();
     auto extension = file.suffix();
     qDebug() << prefix << extension;
-
-    if(suffix.toUpper() == "BIN") {
+    ////////////////////////////////////////////////////////////////////////////////
+    if(extension.toUpper() == "BIN") {
         m_FileExtension = DataFileExtensions::BIN;
-    } else if(suffix.toUpper() == "BGEO") {
+    } else if(extension.toUpper() == "BGEO") {
         m_FileExtension = DataFileExtensions::BGEO;
-    } else if(suffix.toUpper() == "OBJ") {
+    } else if(extension.toUpper() == "OBJ") {
         m_FileExtension = DataFileExtensions::OBJ;
     } else {
         return false; // wrong file extension
     }
-    auto baseName = file.baseName();
-    if(baseName + QString(".%4d.") + extension == file.fileName()) {
+    ////////////////////////////////////////////////////////////////////////////////
+    auto enumerateWidth = file.completeSuffix().indexOf('.');
+    if(enumerateWidth < 1) {
+        return false;
+    }
+    if(enumerateWidth == 4) {
         m_EnumerateType = EnumerateTypes::Width4_0Prefix;
+        qDebug() << "Width4_0Prefix";
+    } else if(enumerateWidth == 3) {
+        m_EnumerateType = EnumerateTypes::Width3_0Prefix;
+        qDebug() << "Width3_0Prefix";
+    } else {
+        m_EnumerateType = EnumerateTypes::NoPrefix;
+        qDebug() << "noPrefix";
     }
     return true;
 }
@@ -84,7 +97,7 @@ void DataReader::resetData() {
     ////////////////////////////////////////////////////////////////////////////////
     if(m_WatchingPath != "") {
         m_DataDirWatcher->removePath(m_WatchingPath);
-        m_WatchingPath.clear();
+        m_WatchingPath = "";
     }
 }
 

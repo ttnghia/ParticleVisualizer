@@ -55,6 +55,7 @@ private:
     SharedPtr<VisualizationData> m_VizData;
     QString                      m_SampleFileName;
     QString                      m_DataSequencePrefix;
+    QString                      m_WatchingPath;
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////

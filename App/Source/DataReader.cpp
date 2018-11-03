@@ -41,12 +41,12 @@ DataReader::DataReader(const SharedPtr<VisualizationData>& vizData) : m_VizData(
 void DataReader::setSequenceFile(const QString& sampleFileName) {
     if(analyzeSequence(sampleFileName)) {
         resetData();
-        auto dataFolder = QFileInfo(sampleFileName).dir();
-        m_DataDirWatcher->addPath(dataFolder.absolutePath());
+        auto dataFolder = QFileInfo(sampleFileName).dir().absolutePath();
+        m_DataDirWatcher->addPath(dataFolder);
         m_SampleFileName = sampleFileName;
         m_bValidDataPath = true;
         countFrames();
-        emit inputSequenceAccepted(sampleFileName);
+        emit inputSequenceAccepted(dataFolder);
     }
 }
 

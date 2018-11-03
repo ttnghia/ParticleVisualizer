@@ -32,7 +32,7 @@ public:
     void refresh() { setSequenceFile(m_SampleFileName); }
 
 signals:
-    void inputSequenceAccepted(const QString& dataPath);
+    void inputSequenceAccepted(const QString& dataFolder);
 private slots:
     void countFrames();
 private:

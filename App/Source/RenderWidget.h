@@ -30,40 +30,24 @@ protected:
     virtual void renderOpenGL();
     SharedPtr<VisualizationData> m_VizData = std::make_shared<VisualizationData>();
 
-public:
-    void  randomizeDiffuseColors();
-    void  setRandomizedDiffuseColor(int vizType, float r, float g, float b);
-    Vec4f getRandomizedDiffuseColor(int vizType);
-
 public slots:
     void updateCamera();
     void updateSystemDimension();
     void updateVizData();
-    void hideVisualization(int vizType, bool bHide) { m_bRender[vizType] = !bHide; }
-    void setParticleDiffuseColorMode(int vizType, int colorMode);
-    void enableRandomizedDiffuseColor(bool bEnable) { m_bRandomizeDiffuseColor = bEnable; }
-    void setMaterial(int vizType, const MaterialData& material);
+    void setParticleDiffuseColorMode(int colorMode);
+    void setMaterial(const MaterialData& material);
 
 protected:
-    SharedPtr<Material> m_Materials[VisualizationType::nVisualizationTypes() - 1];
-    SharedPtr<Material> m_RndMaterials[VisualizationType::nVisualizationTypes() - 1];
-    bool                m_bRender[VisualizationType::nVisualizationTypes()];
-    float               m_ParticleRadius         = 0;
-    float               m_RadiusScale            = 0;
-    bool                m_bRandomizeDiffuseColor = false;
-
     void initMaterials();
     ////////////////////////////////////////////////////////////////////////////////
+    float m_RadiusScale = 0;
     struct {
-        SharedPtr<QtAppShaderProgram> shader        = nullptr;
-        SharedPtr<OpenGLBuffer>       buffPosition  = nullptr;
-        SharedPtr<OpenGLBuffer>       buffColorData = nullptr;
-        float                         vColorMin     = 0;
-        float                         vColorMax     = 1.0f;
+        SharedPtr<QtAppShaderProgram> shader       = nullptr;
+        SharedPtr<OpenGLBuffer>       buffPosition = nullptr;
+        SharedPtr<Material>           material;
 
         GLuint VAO;
         GLint  v_Position;
-        GLint  v_iColor;
         GLuint ub_CamData;
         GLuint ub_Light;
         GLuint ub_Material;
@@ -74,19 +58,14 @@ protected:
         GLuint u_ScreenHeight;
         GLuint u_DomainHeight;
         GLuint u_ColorMode;
-        GLuint u_vColorMin;
-        GLuint u_vColorMax;
-        GLuint u_ColorMinVal;
-        GLuint u_ColorMaxVal;
         GLuint u_ClipPlane;
 
-        GLuint nParticles = 0;
-        int    colorMode  = RenderColorMode::Ramp;
-        Vec3f  colorMinVal;
-        Vec3f  colorMaxVal;
+        GLuint nParticles     = 0;
+        float  particleRadius = 0;
+        int    colorMode      = RenderColorMode::Ramp;
 
         bool bInitialized = false;
-    } m_RDataParticle[VisualizationType::nParticleTypes()];
+    } m_RDataParticle;
 
     void initRDataParticle();
     void initParticleVAO();

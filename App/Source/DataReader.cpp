@@ -194,14 +194,17 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
                          };
     if(m_VizData->systemDimension == 3) {
         readParticles(file, m_VizData->buffPositions3D, bSuccess, nBytesRead);
+        m_VizData->particlePositionPtrs = reinterpret_cast<char*>(m_VizData->buffPositions3D.data());
     } else {
         readParticles(file, m_VizData->buffPositions2D, bSuccess, nBytesRead);
+        m_VizData->particlePositionPtrs = reinterpret_cast<char*>(m_VizData->buffPositions2D.data());
     }
     ////////////////////////////////////////////////////////////////////////////////
     if(nParticles != m_VizData->nParticles) {
         m_VizData->nParticles = nParticles;
         emit numVizPrimitivesChanged();
     }
+    m_VizData->particleRadius = 0.001;
     if(!bSuccess) {
         return { false, 0 };
     } else {

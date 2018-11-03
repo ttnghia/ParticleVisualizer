@@ -27,10 +27,10 @@ class Controller : public OpenGLController {
     friend class MainWindow;
 public:
     explicit Controller(RenderWidget* renderWidget, DataReader* dataReader, QWidget* parent = nullptr, int width = 300);
-    JParams updateVisualizationParameters(const QString& sceneFile); // return jparams for visualization parameters
-    void    setParticleDiffuseColorMode(int colorMode);
-    void    setMaterial(const MaterialData& materialData);
-    void    browseOutputPath();
+    void updateVisualizationParameters(const QString& sceneFile);
+    void setParticleDiffuseColorMode(int colorMode);
+    void setMaterial(const MaterialData& materialData);
+    void browseOutputPath();
 
     void browseInputPath();
     void increaseDelay();

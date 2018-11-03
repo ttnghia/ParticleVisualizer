@@ -39,13 +39,19 @@ Controller::Controller(RenderWidget* renderWidget, DataReader* dataReader, QWidg
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-JParams Controller::updateVisualizationParameters(const QString& sceneFile) {
+void Controller::updateVisualizationParameters(const QString& sceneFile) {
     std::ifstream inFile(sceneFile.toStdString());
     __NT_REQUIRE(inFile.is_open());
     try {
         nlohmann::json jParams = nlohmann::json::parse(inFile);
         inFile.close();
         ////////////////////////////////////////////////////////////////////////////////
+        if(JSONHelpers::readValue(jParams, m_RenderWidget->getVizData()->systemDimension, "Dimension")) {
+            __NT_REQUIRE(m_RenderWidget->getVizData()->systemDimension == 2 ||
+                         m_RenderWidget->getVizData()->systemDimension == 3);
+            m_RenderWidget->updateSystemDimension();
+        }
+
         __NT_REQUIRE(jParams.find("SimulationParameters") != jParams.end());
         {
             JParams jSimParams = jParams["SimulationParameters"];
@@ -131,15 +137,18 @@ JParams Controller::updateVisualizationParameters(const QString& sceneFile) {
                 }
             }
             m_LightEditor->changeLights(m_RenderWidget->getVizData()->lights);
-
-            return jVizParams;
+            ////////////////////////////////////////////////////////////////////////////////
+            if(Int frameDelay; JSONHelpers::readValue(jVizParams, frameDelay, "FrameDelay")) {
+                m_sldFrameDelay->setValue(frameDelay);
+            }
+            if(Int frameStep; JSONHelpers::readValue(jVizParams, frameStep, "FrameStep")) {
+                m_sldFrameStep->setValue(frameStep);
+            }
         }
     } catch(std::exception& e) {
         std::cerr << std::endl << std::endl << "Error while loading json scene: " << e.what() << std::endl;
         QMessageBox::critical(nullptr, QString("Error"), QString("Error while loading json scene: ") + QString(e.what()));
     }
-
-    return JParams();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -213,13 +222,7 @@ void Controller::connectWidgets() {
                 dataDir.setNameFilters(QStringList() << "*.json");
                 if(dataDir.entryList().count() != 0) {
                     QString sceneFile = dataPath + "/" + dataDir.entryList()[0];
-                    auto jVizParams   = updateVisualizationParameters(sceneFile);
-                    if(Int frameDelay; JSONHelpers::readValue(jVizParams, frameDelay, "FrameDelay")) {
-                        m_sldFrameDelay->setValue(frameDelay);
-                    }
-                    if(Int frameStep; JSONHelpers::readValue(jVizParams, frameStep, "FrameStep")) {
-                        m_sldFrameStep->setValue(frameStep);
-                    }
+                    updateVisualizationParameters(sceneFile);
                 }
             });
     ////////////////////////////////////////////////////////////////////////////////

@@ -79,6 +79,9 @@ public slots:
     void readFrame(int frame);
 private:
     void readNextFrameByTimer() { if(!m_bPause) { readNextFrame(); } }
+
+    template<Int N>
+    float computeParticleRadius(const StdVT<VecX<N, float>>& positions);
     ////////////////////////////////////////////////////////////////////////////////
     int  m_nFrames      = 0;
     int  m_CurrentFrame = 0;

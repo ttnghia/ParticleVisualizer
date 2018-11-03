@@ -45,11 +45,13 @@ private:
         Width3_0Prefix,
         Width4_0Prefix
     };
+    enum class FileExtensions { BIN, BGEO, OBJ };
     ////////////////////////////////////////////////////////////////////////////////
-    EnumerateTypes      m_EnumerateType  = EnumerateTypes::NoPrefix;
-    QString             m_FileExtension  = QString(".bgeo");
-    bool                m_bValidDataPath = false;
-    QFileSystemWatcher* m_DataDirWatcher = new QFileSystemWatcher;
+    EnumerateTypes      m_EnumerateType    = EnumerateTypes::NoPrefix;
+    FileExtensions      m_FileExtension    = FileExtensions::BGEO;
+    QString             m_FileExtensionStr = QString(".bgeo");
+    bool                m_bValidDataPath   = false;
+    QFileSystemWatcher* m_DataDirWatcher   = new QFileSystemWatcher;
 
     SharedPtr<VisualizationData> m_VizData;
     QString                      m_SampleFileName;

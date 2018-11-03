@@ -75,11 +75,14 @@ bool DataReader::analyzeSequence(const QString& sampleFileName) {
     qDebug() << prefix << extension;
     ////////////////////////////////////////////////////////////////////////////////
     if(extension.toUpper() == "BIN") {
-        m_FileExtension = QString(".bin");
+        m_FileExtension    = FileExtensions::BIN;
+        m_FileExtensionStr = QString(".bin");
     } else if(extension.toUpper() == "BGEO") {
-        m_FileExtension = QString(".bgeo");
+        m_FileExtension    = FileExtensions::BGEO;
+        m_FileExtensionStr = QString(".bgeo");
     } else if(extension.toUpper() == "OBJ") {
-        m_FileExtension = QString(".obj");
+        m_FileExtension    = FileExtensions::OBJ;
+        m_FileExtensionStr = QString(".obj");
     } else {
         return false; // wrong file extension
     }
@@ -114,7 +117,7 @@ QString DataReader::getFilePath(int idx) {
                                      return QString("%1").arg(idx, 3, 10, QChar('0'));
                                  }
                              };
-    return m_DataSequencePrefix + getFrameEnumerate() + m_FileExtension;
+    return m_DataSequencePrefix + getFrameEnumerate() + m_FileExtensionStr;
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -180,25 +183,25 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
     bool   bSuccess   = false;
     size_t nBytesRead = 0;
     UInt   nParticles = 0;
-    String fileName   = QString("").arg(m_DataSequencePrefix).arg(frameID).toStdString();
+    String file       = getFilePath(frameID).toStdString();
     ////////////////////////////////////////////////////////////////////////////////
     auto readParticles = [&](const auto& fileName, auto& buffer, auto& bSuccess, auto& nBytesRead) {
                              buffer.resize(0);
-                             if(m_FileExtension == DataFileExtensions::BGEO) {
+                             if(m_FileExtension == FileExtensions::BGEO) {
                                  bSuccess = ParticleHelpers::loadParticlesFromBGEO(fileName, buffer, m_VizData->particleRadius);
-                             } else if(m_FileExtension == DataFileExtensions::BIN) {
+                             } else if(m_FileExtension == FileExtensions::BIN) {
                                  bSuccess = ParticleHelpers::loadParticlesFromBinary(fileName, buffer, m_VizData->particleRadius);
                              } else {
                                  bSuccess = ParticleHelpers::loadParticlesFromObj(fileName, buffer);
                              }
-                             nParticles = buffer.size();
-                             nBytesRead = nParticles * sizeof(Vec3f);
+                             nParticles = static_cast<UInt>(buffer.size());
+                             nBytesRead = buffer.size() * sizeof(Vec3f);
                              return nParticles;
                          };
     if(m_VizData->systemDimension == 3) {
-        readParticles(fileName, m_VizData->buffPositions3D, bSuccess, nBytesRead);
+        readParticles(file, m_VizData->buffPositions3D, bSuccess, nBytesRead);
     } else {
-        readParticles(fileName, m_VizData->buffPositions2D, bSuccess, nBytesRead);
+        readParticles(file, m_VizData->buffPositions2D, bSuccess, nBytesRead);
     }
     ////////////////////////////////////////////////////////////////////////////////
     if(nParticles != m_VizData->nParticles) {

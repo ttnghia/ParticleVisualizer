@@ -70,7 +70,6 @@ bool DataReader::analyzeSequence(const QString& sampleFileName) {
     auto file      = QFileInfo(sampleFileName);
     auto prefix    = file.dir().absolutePath().replace("\\\\", "/") + QString("/") + file.baseName();
     auto extension = file.suffix();
-    qDebug() << prefix << extension;
     ////////////////////////////////////////////////////////////////////////////////
     if(extension.toUpper() == "BIN") {
         m_FileExtension    = FileExtensions::BIN;
@@ -91,13 +90,10 @@ bool DataReader::analyzeSequence(const QString& sampleFileName) {
     }
     if(enumerateWidth == 4) {
         m_EnumerateType = EnumerateTypes::Width4_0Prefix;
-        qDebug() << "Width4_0Prefix";
     } else if(enumerateWidth == 3) {
         m_EnumerateType = EnumerateTypes::Width3_0Prefix;
-        qDebug() << "Width3_0Prefix";
     } else {
         m_EnumerateType = EnumerateTypes::NoPrefix;
-        qDebug() << "noPrefix";
     }
     ////////////////////////////////////////////////////////////////////////////////
     m_DataSequencePrefix = prefix + QString(".");
@@ -124,7 +120,6 @@ void DataReader::countFrames() {
     try {
         while(true) {
             QString file = getFilePath(nFrames);
-            qDebug() << file;
             if(QFileInfo::exists(file) || nFrames == 0) {
                 ++nFrames;
             } else {

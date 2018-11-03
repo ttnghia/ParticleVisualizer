@@ -117,8 +117,8 @@ struct VisualizationData {
     template<Int N>
     void computeParticleRadius(const StdVT<VecX<N, float>>& positions) {
         auto maxN = positions.size();
-        if(maxN > 100) {
-            maxN = 100;
+        if(maxN > static_cast<size_t>(1000)) {
+            maxN = static_cast<size_t>(1000);
         }
         float averageDistance = 0;
         for(size_t p = 0; p < maxN; ++p) {

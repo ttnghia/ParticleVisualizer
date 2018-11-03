@@ -195,11 +195,12 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
     if(m_VizData->systemDimension == 3) {
         readParticles(file, m_VizData->buffPositions3D, bSuccess, nBytesRead);
         m_VizData->particlePositionPtrs = reinterpret_cast<char*>(m_VizData->buffPositions3D.data());
-        m_VizData->particleRadius       = computeParticleRadius(m_VizData->buffPositions3D);
     } else {
         readParticles(file, m_VizData->buffPositions2D, bSuccess, nBytesRead);
         m_VizData->particlePositionPtrs = reinterpret_cast<char*>(m_VizData->buffPositions2D.data());
-        m_VizData->particleRadius       = computeParticleRadius(m_VizData->buffPositions2D);
+    }
+    if(!m_VizData->bRadiusOverrided) {
+        m_VizData->computeParticleRadius();
     }
     ////////////////////////////////////////////////////////////////////////////////
     if(nParticles != m_VizData->nParticles) {
@@ -212,29 +213,4 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
     } else {
         return { true, nBytesRead };
     }
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-template<Int N>
-float DataReader::computeParticleRadius(const StdVT<VecX<N, float>>& positions) {
-    auto maxN = positions.size();
-    if(maxN > 100) {
-        maxN = 100;
-    }
-    float averageDistance = 0;
-    for(size_t p = 0; p < maxN; ++p) {
-        auto minDistanceSqr = float(1e10);
-        for(size_t q = 0; q < maxN; ++q) {
-            if(p == q) {
-                continue;
-            }
-            auto tmp = glm::length2(positions[p] - positions[q]);
-            if(minDistanceSqr > tmp) {
-                minDistanceSqr = tmp;
-            }
-        }
-        averageDistance += minDistanceSqr;
-    }
-    averageDistance = std::sqrt(averageDistance / static_cast<float>(maxN));
-    return averageDistance * 0.5f;
 }

@@ -33,8 +33,10 @@ Controller::Controller(RenderWidget* renderWidget, DataReader* dataReader, QWidg
     setupColorControllers();
     setupOutputControllers();
     setupFrameControllers();
-    setupDataPlayerButtons();
+    setupParticleRadiusControllers();
     setupInputControllers();
+
+    setupDataPlayerButtons();
     connectWidgets();
 }
 
@@ -154,7 +156,7 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::setParticleDiffuseColorMode(int colorMode) {
     (static_cast<QRadioButton*>(m_smColorMode->mapping(colorMode)))->setChecked(true);
-    m_RenderWidget->setParticleDiffuseColorMode(colorMode);
+    m_RenderWidget->getVizData()->colorMode = colorMode;
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -198,8 +200,9 @@ void Controller::setInputPath(const QString& dataPath) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::connectWidgets() {
-    connect(m_smColorMode,     static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
-            m_RenderWidget, &RenderWidget::setParticleDiffuseColorMode);
+    connect(m_smColorMode, static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), [&](int colorMode) {
+                m_RenderWidget->getVizData()->colorMode = colorMode;
+            });
     connect(m_msMaterial,      &MaterialSelector::materialChanged, m_RenderWidget, &RenderWidget::setMaterial);
     ////////////////////////////////////////////////////////////////////////////////
     connect(m_OutputPath,      &BrowsePathWidget::pathChanged,     m_RenderWidget, &RenderWidget::setCapturePath);
@@ -223,6 +226,28 @@ void Controller::connectWidgets() {
                 if(dataDir.entryList().count() != 0) {
                     QString sceneFile = dataPath + "/" + dataDir.entryList()[0];
                     updateVisualizationParameters(sceneFile);
+                }
+            });
+    ////////////////////////////////////////////////////////////////////////////////
+
+    ////////////////////////////////////////////////////////////////////////////////
+    // particle radius
+    connect(m_chkOverrideParticleRadius, &QCheckBox::toggled, [&] (bool bChecked) {
+                m_RenderWidget->getVizData()->bRadiusOverrided = bChecked;
+                if(bChecked) {
+                    try {
+                        m_RenderWidget->getVizData()->particleRadius = std::stof(m_txtParticleRadius->text().toStdString());
+                    } catch(std::exception&) {}
+                } else {
+                    m_RenderWidget->getVizData()->particleRadius = 0;
+                    m_RenderWidget->getVizData()->computeParticleRadius();
+                }
+            });
+    connect(m_txtParticleRadius, &QLineEdit::textChanged, [&](const QString& txt) {
+                if(m_RenderWidget->getVizData()->bRadiusOverrided) {
+                    try {
+                        m_RenderWidget->getVizData()->particleRadius = std::stof(txt.toStdString());
+                    } catch(std::exception&) {}
                 }
             });
     ////////////////////////////////////////////////////////////////////////////////
@@ -312,6 +337,20 @@ void Controller::setupInputControllers() {
     grpInput->setLayout(m_InputPath->getLayout());
     ////////////////////////////////////////////////////////////////////////////////
     m_LayoutMainControllers->addWidget(grpInput);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void Controller::setupParticleRadiusControllers() {
+    m_chkOverrideParticleRadius = new QCheckBox("Override radius: ");
+    m_txtParticleRadius         = new QLineEdit;
+    m_txtParticleRadius->setText("0.01");
+    QHBoxLayout* layoutPRadius = new QHBoxLayout;
+    layoutPRadius->addWidget(m_chkOverrideParticleRadius);
+    layoutPRadius->addWidget(m_txtParticleRadius);
+    QGroupBox* grpPRadius = new QGroupBox;
+    grpPRadius->setTitle("Particle Radius");
+    grpPRadius->setLayout(layoutPRadius);
+    m_LayoutMainControllers->addWidget(grpPRadius);
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

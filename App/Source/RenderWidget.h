@@ -34,7 +34,6 @@ public slots:
     void updateCamera();
     void updateSystemDimension();
     void updateVizData();
-    void setParticleDiffuseColorMode(int colorMode);
     void setMaterial(const MaterialData& material);
 
 protected:
@@ -59,10 +58,6 @@ protected:
         GLuint u_DomainHeight;
         GLuint u_ColorMode;
         GLuint u_ClipPlane;
-
-        GLuint nParticles     = 0;
-        float  particleRadius = 0;
-        int    colorMode      = RenderColorMode::Ramp;
 
         bool bInitialized = false;
     } m_RDataParticle;

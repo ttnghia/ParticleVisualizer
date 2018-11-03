@@ -53,8 +53,9 @@ struct VisualizationData {
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
-    // light
+    // light, color
     StdVT<PointLightData> lights;
+    int                   colorMode = static_cast<int>(RenderColorMode::Ramp);
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -62,6 +63,7 @@ struct VisualizationData {
     char* particlePositionPtrs;
     UInt  nParticles;
     float particleRadius;
+    bool  bRadiusOverrided;
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -92,6 +94,7 @@ struct VisualizationData {
         lights[0].position = DefaultVisualizationParameters::DefaultLight0Position;
         lights[1].position = DefaultVisualizationParameters::DefaultLight1Position;
         ////////////////////////////////////////////////////////////////////////////////
+        bRadiusOverrided     = false;
         particleRadius       = 0;
         nParticles           = 0;
         particlePositionPtrs = nullptr;
@@ -101,5 +104,38 @@ struct VisualizationData {
         bVizDataUploaded   = false;
         bCaptureImageSaved = true;
         currentFrame       = 0;
+    }
+
+    void computeParticleRadius() {
+        if(systemDimension == 3) {
+            computeParticleRadius(buffPositions3D);
+        } else {
+            computeParticleRadius(buffPositions2D);
+        }
+    }
+
+    template<Int N>
+    void computeParticleRadius(const StdVT<VecX<N, float>>& positions) {
+        auto maxN = positions.size();
+        if(maxN > 100) {
+            maxN = 100;
+        }
+        float averageDistance = 0;
+        for(size_t p = 0; p < maxN; ++p) {
+            auto minDistanceSqr = float(1e10);
+            for(size_t q = 0; q < maxN; ++q) {
+                if(p == q) {
+                    continue;
+                }
+                auto tmp = glm::length2(positions[p] - positions[q]);
+                if(minDistanceSqr > tmp) {
+                    minDistanceSqr = tmp;
+                }
+            }
+            averageDistance += minDistanceSqr;
+        }
+        averageDistance = std::sqrt(averageDistance / static_cast<float>(maxN));
+        ////////////////////////////////////////////////////////////////////////////////
+        particleRadius = averageDistance * 0.5f;
     }
 };

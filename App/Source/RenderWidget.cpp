@@ -86,15 +86,7 @@ void RenderWidget::updateVizData() {
     }
 
     doneCurrent();
-    m_RDataParticle.nParticles     = m_VizData->nParticles;
-    m_RDataParticle.particleRadius = m_VizData->particleRadius;
-    m_VizData->bVizDataUploaded    = true;
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void RenderWidget::setParticleDiffuseColorMode(int colorMode) {
-    Q_ASSERT(colorMode < RenderColorMode::NumColorModes);
-    m_RDataParticle.colorMode = colorMode;
+    m_VizData->bVizDataUploaded = true;
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -158,7 +150,7 @@ void RenderWidget::initParticleVAO() {
 void RenderWidget::renderParticles() {
     ////////////////////////////////////////////////////////////////////////////////
     Q_ASSERT(m_RDataParticle.bInitialized);
-    if(m_RDataParticle.nParticles == 0) {
+    if(m_VizData->nParticles == 0) {
         return;
     }
     m_UBufferCamData->bindBufferBase();
@@ -168,7 +160,7 @@ void RenderWidget::renderParticles() {
     m_RDataParticle.shader->bindUniformBlock(m_RDataParticle.ub_CamData, m_UBufferCamData->getBindingPoint());
     m_RDataParticle.shader->bindUniformBlock(m_RDataParticle.ub_Light,   m_Lights->getBufferBindingPoint());
     ////////////////////////////////////////////////////////////////////////////////
-    m_RDataParticle.shader->setUniformValue(m_RDataParticle.u_PointRadius,  m_RDataParticle.particleRadius);
+    m_RDataParticle.shader->setUniformValue(m_RDataParticle.u_PointRadius,  m_VizData->particleRadius);
     m_RDataParticle.shader->setUniformValue(m_RDataParticle.u_PointScale,   m_RadiusScale);
     m_RDataParticle.shader->setUniformValue(m_RDataParticle.u_Dimension,    m_VizData->systemDimension);
     m_RDataParticle.shader->setUniformValue(m_RDataParticle.u_ScreenHeight, height());
@@ -177,13 +169,13 @@ void RenderWidget::renderParticles() {
     ////////////////////////////////////////////////////////////////////////////////
     m_RDataParticle.material->bindUniformBuffer();
     m_RDataParticle.shader->bindUniformBlock(m_RDataParticle.ub_Material, m_RDataParticle.material->getBufferBindingPoint());
-    m_RDataParticle.shader->setUniformValue(m_RDataParticle.u_ColorMode, m_RDataParticle.colorMode);
+    m_RDataParticle.shader->setUniformValue(m_RDataParticle.u_ColorMode, m_VizData->colorMode);
 
     ////////////////////////////////////////////////////////////////////////////////
     glCall(glEnable(GL_VERTEX_PROGRAM_POINT_SIZE));
     glCall(glBindVertexArray(m_RDataParticle.VAO));
-    m_RDataParticle.shader->setUniformValue(m_RDataParticle.u_nParticles, m_RDataParticle.nParticles);
-    glCall(glDrawArrays(GL_POINTS, 0, m_RDataParticle.nParticles));
+    m_RDataParticle.shader->setUniformValue(m_RDataParticle.u_nParticles, m_VizData->nParticles);
+    glCall(glDrawArrays(GL_POINTS, 0, m_VizData->nParticles));
     ////////////////////////////////////////////////////////////////////////////////
     glCall(glBindVertexArray(0));
     m_RDataParticle.shader->release();

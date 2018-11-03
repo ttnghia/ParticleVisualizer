@@ -52,6 +52,22 @@ void DataReader::setSequenceFile(const QString& sampleFileName) {
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void DataReader::resetData() {
+    m_bValidDataPath = false;
+    m_VizData->resetData();
+    ////////////////////////////////////////////////////////////////////////////////
+    m_CurrentFrame = -1;
+    m_nFrames      = 0;
+    m_bPause       = false;
+    emit numFramesChanged(0);
+    ////////////////////////////////////////////////////////////////////////////////
+    if(m_WatchingPath != "") {
+        m_DataDirWatcher->removePath(m_WatchingPath);
+        m_WatchingPath = "";
+    }
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 bool DataReader::analyzeSequence(const QString& sampleFileName) {
     auto file      = QFileInfo(sampleFileName);
     auto prefix    = file.dir().absolutePath().replace("\\\\", "/") + QString("/") + file.baseName();
@@ -59,11 +75,11 @@ bool DataReader::analyzeSequence(const QString& sampleFileName) {
     qDebug() << prefix << extension;
     ////////////////////////////////////////////////////////////////////////////////
     if(extension.toUpper() == "BIN") {
-        m_FileExtension = DataFileExtensions::BIN;
+        m_FileExtension = QString(".bin");
     } else if(extension.toUpper() == "BGEO") {
-        m_FileExtension = DataFileExtensions::BGEO;
+        m_FileExtension = QString(".bgeo");
     } else if(extension.toUpper() == "OBJ") {
-        m_FileExtension = DataFileExtensions::OBJ;
+        m_FileExtension = QString(".obj");
     } else {
         return false; // wrong file extension
     }
@@ -82,32 +98,32 @@ bool DataReader::analyzeSequence(const QString& sampleFileName) {
         m_EnumerateType = EnumerateTypes::NoPrefix;
         qDebug() << "noPrefix";
     }
+    ////////////////////////////////////////////////////////////////////////////////
+    m_DataSequencePrefix = prefix + QString(".");
     return true;
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void DataReader::resetData() {
-    m_bValidDataPath = false;
-    m_VizData->resetData();
-    ////////////////////////////////////////////////////////////////////////////////
-    m_CurrentFrame = -1;
-    m_nFrames      = 0;
-    m_bPause       = false;
-    emit numFramesChanged(0);
-    ////////////////////////////////////////////////////////////////////////////////
-    if(m_WatchingPath != "") {
-        m_DataDirWatcher->removePath(m_WatchingPath);
-        m_WatchingPath = "";
-    }
+QString DataReader::getFilePath(int idx) {
+    auto getFrameEnumerate = [&, idx] {
+                                 if(m_EnumerateType == EnumerateTypes::NoPrefix) {
+                                     return QString("%1").arg(idx);
+                                 } else if(m_EnumerateType == EnumerateTypes::Width4_0Prefix) {
+                                     return QString("%1").arg(idx, 4, 10, QChar('0'));
+                                 } else {
+                                     return QString("%1").arg(idx, 3, 10, QChar('0'));
+                                 }
+                             };
+    return m_DataSequencePrefix + getFrameEnumerate() + m_FileExtension;
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void DataReader::countFrames() {
-    UInt nFrame = 0;
+    UInt nFrames = 0;
     try {
         while(true) {
-            QString fileName = QString("").arg(m_DataSequencePrefix).arg(nFrames);
-            if(QFileInfo::exists(fileName)) {
+            QString file = getFilePath(nFrames);
+            if(QFileInfo::exists(file)) {
                 ++nFrames;
             } else {
                 break;
@@ -117,7 +133,7 @@ void DataReader::countFrames() {
         std::cerr << "Exception during couting files: " << e.what() << std::endl;
     }
     if(nFrames != m_nFrames) {
-        m_nFrames = nFrame;
+        m_nFrames = nFrames;
         emit numFramesChanged(m_nFrames);
     }
 }

@@ -36,19 +36,18 @@ signals:
 private slots:
     void countFrames();
 private:
-
-    void resetData();
-    bool analyzeSequence(const QString& sampleFileName);
+    void    resetData();
+    bool    analyzeSequence(const QString& sampleFileName);
+    QString getFilePath(int idx);
     ////////////////////////////////////////////////////////////////////////////////
     enum class EnumerateTypes {
         NoPrefix,
         Width3_0Prefix,
         Width4_0Prefix
     };
-    enum class DataFileExtensions { BIN, BGEO, OBJ };
     ////////////////////////////////////////////////////////////////////////////////
     EnumerateTypes      m_EnumerateType  = EnumerateTypes::NoPrefix;
-    DataFileExtensions  m_FileExtension  = DataFileExtensions::BGEO;
+    QString             m_FileExtension  = QString(".bgeo");
     bool                m_bValidDataPath = false;
     QFileSystemWatcher* m_DataDirWatcher = new QFileSystemWatcher;
 

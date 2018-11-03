@@ -89,19 +89,8 @@ JParams Controller::updateVisualizationParameters(const QString& sceneFile) {
                 m_OutputPath->setPath(QtAppUtils::getDefaultCapturePath());
             }
             ////////////////////////////////////////////////////////////////////////////////
-            for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes() - 1; ++vizType) {
-                setMaterial(vizType, DefaultVisualizationParameters::DefaultRenderMaterials[vizType]);
-            }
+            setMaterial(DefaultVisualizationParameters::DefaultRenderMaterial);
             if(jVizParams.find("ColorAndMaterials") != jVizParams.end()) {
-                auto name2VizType = [](const auto& name) -> int {
-                                        for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes(); ++vizType) {
-                                            if(VizNames[vizType] == name) {
-                                                return vizType;
-                                            }
-                                        }
-                                        __NT_DIE("Invalid visualization name!");
-                                        return -1; // to disable warning
-                                    };
                 auto name2ColorMode = [](const auto& name) -> int {
                                           if(name == "Uniform") {
                                               return RenderColorMode::UniformColor;
@@ -109,27 +98,22 @@ JParams Controller::updateVisualizationParameters(const QString& sceneFile) {
                                               return RenderColorMode::Random;
                                           } else if(name == "Ramp") {
                                               return RenderColorMode::Ramp;
-                                          } else if(name == "ObjectIndex") {
-                                              return RenderColorMode::ObjectIndex;
                                           }
                                           __NT_DIE("Invalid color mode!");
                                           return -1; // to disable warning
                                       };
                 for(auto& jColorMaterial :jVizParams["ColorAndMaterials"]) {
-                    __NT_REQUIRE(jColorMaterial.find("VizType") != jColorMaterial.end());
-                    auto vizType = name2VizType(jColorMaterial["VizType"]);
-
                     if(String colorMode; JSONHelpers::readValue(jColorMaterial, colorMode, "ColorMode")) {
-                        setParticleDiffuseColorMode(vizType, name2ColorMode(colorMode));
+                        setParticleDiffuseColorMode(name2ColorMode(colorMode));
                     }
                     if(jColorMaterial.find("Material") != jColorMaterial.end()) {
                         auto& jMaterial    = jColorMaterial["Material"];
-                        auto  materialData = DefaultVisualizationParameters::DefaultRenderMaterials[vizType];
+                        auto  materialData = DefaultVisualizationParameters::DefaultRenderMaterial;
                         JSONHelpers::readVector(jMaterial, materialData.ambient,  "Ambient");
                         JSONHelpers::readVector(jMaterial, materialData.diffuse,  "Diffuse");
                         JSONHelpers::readVector(jMaterial, materialData.specular, "Specular");
                         JSONHelpers::readValue(jMaterial, materialData.shininess, "Shininess");
-                        setMaterial(vizType, materialData);
+                        setMaterial(materialData);
                     }
                 }
             }
@@ -147,29 +131,6 @@ JParams Controller::updateVisualizationParameters(const QString& sceneFile) {
             }
             m_LightEditor->changeLights(m_RenderWidget->getVizData()->lights);
 
-            ////////////////////////////////////////////////////////////////////////////////
-            if(bool randomizeDiffuseColors; JSONHelpers::readBool(jVizParams, randomizeDiffuseColors, "RandomizeDiffuseColors")) {
-                m_chkOverrideDiffuseColor->setChecked(randomizeDiffuseColors);
-            }
-            ////////////////////////////////////////////////////////////////////////////////
-            if(bool bHide; JSONHelpers::readBool(jVizParams, bHide, "HideStandardParticle")) {
-                m_btnHideVisualization[VisualizationType::StandardMPMParticle]->setChecked(bHide);
-            }
-            if(bool bHide; JSONHelpers::readBool(jVizParams, bHide, "HideVertexParticle")) {
-                m_btnHideVisualization[VisualizationType::VertexParticle]->setChecked(bHide);
-            }
-            if(bool bHide; JSONHelpers::readBool(jVizParams, bHide, "HideQuadParticle")) {
-                m_btnHideVisualization[VisualizationType::QuadratureParticle]->setChecked(bHide);
-            }
-            if(bool bHide; JSONHelpers::readBool(jVizParams, bHide, "HideGhostParticle")) {
-                m_btnHideVisualization[VisualizationType::GhostBoundaryParticle]->setChecked(bHide);
-            }
-            if(bool bHide; JSONHelpers::readBool(jVizParams, bHide, "HideOrientation")) {
-                m_btnHideVisualization[VisualizationType::ParticleOrientation]->setChecked(bHide);
-            }
-            if(bool bHide; JSONHelpers::readBool(jVizParams, bHide, "HideMesh")) {
-                m_btnHideVisualization[VisualizationType::TriangleMesh]->setChecked(bHide);
-            }
             return jVizParams;
         }
     } catch(std::exception& e) {
@@ -181,22 +142,16 @@ JParams Controller::updateVisualizationParameters(const QString& sceneFile) {
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void Controller::setParticleDiffuseColorMode(int vizType, int colorMode) {
-    (static_cast<QRadioButton*>(m_smColorMode[vizType]->mapping(colorMode)))->setChecked(true);
-    m_RenderWidget->setParticleDiffuseColorMode(vizType, colorMode);
+void Controller::setParticleDiffuseColorMode(int colorMode) {
+    (static_cast<QRadioButton*>(m_smColorMode->mapping(colorMode)))->setChecked(true);
+    m_RenderWidget->setParticleDiffuseColorMode(colorMode);
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void Controller::setMaterial(int vizType, const MaterialData& materialData) {
-    m_msMaterial[vizType]->setCustomMaterial(materialData);
-    m_msMaterial[vizType]->setDefaultCustomMaterial(true);
-    m_RenderWidget->setMaterial(vizType, materialData);
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void Controller::hideVisualization(int vizType, bool bHide) {
-    m_btnHideVisualization[vizType]->setChecked(bHide);
-    m_RenderWidget->hideVisualization(vizType, bHide);
+void Controller::setMaterial(const MaterialData& materialData) {
+    m_msMaterial->setCustomMaterial(materialData);
+    m_msMaterial->setDefaultCustomMaterial(true);
+    m_RenderWidget->setMaterial(materialData);
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -235,51 +190,17 @@ void Controller::setInputPath(const QString& dataPath) {
 void Controller::setupGUI() {
     setupColorControllers();
     setupOutputControllers();
-    setupParticleVizButtons();
+    setupDataPlayerButtons();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::connectWidgets() {
-    connect(m_cbVizType->getComboBox(), static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [&](int index) {
-                QtAppUtils::setVisibleAll(m_msMaterial[m_MaterialActiveIndex]->getLayout(), false);
-                QtAppUtils::setVisibleAll(m_msMaterial[index]->getLayout(),                 true);
-                QtAppUtils::setVisibleAll(m_loDiffuseColorModes[m_MaterialActiveIndex],     false);
-                QtAppUtils::setVisibleAll(m_loDiffuseColorModes[index],                     true);
-                m_MaterialActiveIndex = index;
-            });
-
-    connect(m_chkOverrideDiffuseColor, &QCheckBox::toggled, m_RenderWidget, &RenderWidget::enableRandomizedDiffuseColor);
-    connect(m_btnRndAllColor,          &QPushButton::clicked,
-            [&] {
-                m_RenderWidget->randomizeDiffuseColors();
-                for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes() - 1; ++vizType) {
-                    m_pkrColor[vizType]->setColor(m_RenderWidget->getRandomizedDiffuseColor(vizType));
-                }
-            });
-
-    for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes() - 1; ++vizType) {
-        connect(m_smColorMode[vizType], static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped), [&, vizType](int colorMode) {
-                    m_RenderWidget->setParticleDiffuseColorMode(vizType, colorMode);
-                });
-        connect(m_msMaterial[vizType], &MaterialSelector::materialChanged, [&, vizType](const MaterialData& material) {
-                    m_RenderWidget->setMaterial(vizType, material);
-                });
-    }
+    connect(m_smColorMode,     static_cast<void (QSignalMapper::*)(int)>(&QSignalMapper::mapped),
+            m_RenderWidget, &RenderWidget::setParticleDiffuseColorMode);
+    connect(m_msMaterial,      &MaterialSelector::materialChanged, m_RenderWidget, &RenderWidget::setMaterial);
     ////////////////////////////////////////////////////////////////////////////////
-    connect(m_OutputPath,      &BrowsePathWidget::pathChanged, m_RenderWidget, &RenderWidget::setCapturePath);
-    connect(m_chkEnableOutput, &QCheckBox::toggled,            [&](bool bEnable) { m_RenderWidget->getVizData()->bCaptureImage = bEnable; });
-    ////////////////////////////////////////////////////////////////////////////////
-
-    ////////////////////////////////////////////////////////////////////////////////
-    // buttons
-    for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes(); ++vizType) {
-        connect(m_btnHideVisualization[vizType], &QPushButton::toggled, [&, vizType](bool bHide) {
-                    m_RenderWidget->hideVisualization(vizType, bHide);
-                    if(!bHide) {
-                        m_RenderWidget->updateVizData();
-                    }
-                });
-    }
+    connect(m_OutputPath,      &BrowsePathWidget::pathChanged,     m_RenderWidget, &RenderWidget::setCapturePath);
+    connect(m_chkEnableOutput, &QCheckBox::toggled,                [&](bool bEnable) { m_RenderWidget->getVizData()->bCaptureImage = bEnable; });
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -290,7 +211,7 @@ void Controller::connectWidgets() {
 
     ////////////////////////////////////////////////////////////////////////////////
     // data path
-    connect(m_InputPath,  &BrowsePathWidget::pathChanged, m_DataReader, &DataReader::setSequenceFile);
+    connect(m_InputPath,  &BrowsePathWidget::pathChanged,     m_DataReader, &DataReader::setSequenceFile);
     connect(m_DataReader, &DataReader::inputSequenceAccepted, [&](const QString& dataPath) {
                 m_btnPause->setChecked(false);
                 ////////////////////////////////////////////////////////////////////////////////
@@ -320,96 +241,34 @@ void Controller::connectWidgets() {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::setupColorControllers() {
-    m_cbVizType = new EnhancedComboBox;
-    m_cbVizType->addItem("Standard MPM Particle");
-    m_cbVizType->addItem("Vertex Particle");
-    m_cbVizType->addItem("Quad Particle");
-    m_cbVizType->addItem("Ghost Boundary Particle");
-    m_cbVizType->addItem("Triangle Mesh");
+    m_msMaterial = new MaterialSelector;
+    m_msMaterial->setCustomMaterial(DefaultVisualizationParameters::DefaultRenderMaterial);
+    m_msMaterial->setDefaultCustomMaterial(true);
     QVBoxLayout* layoutMaterial = new QVBoxLayout;
-    layoutMaterial->addLayout(m_cbVizType->getLayout());
+    layoutMaterial->addLayout(m_msMaterial->getLayout());
     layoutMaterial->addSpacing(5);
-    for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes() - 1; ++vizType) {
-        m_msMaterial[vizType] = new MaterialSelector;
-        m_msMaterial[vizType]->setCustomMaterial(DefaultVisualizationParameters::DefaultRenderMaterials[vizType]);
-        m_msMaterial[vizType]->setDefaultCustomMaterial(true);
-        layoutMaterial->addLayout(m_msMaterial[vizType]->getLayout());
-        if(vizType > 0) {
-            QtAppUtils::setVisibleAll(m_msMaterial[vizType]->getLayout(), false);
-        }
-    }
-    m_MaterialActiveIndex = 0;
-    layoutMaterial->addSpacing(5);
-    for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes() - 1; ++vizType) {
-        m_loDiffuseColorModes[vizType] = new QGridLayout;
-        m_smColorMode[vizType]         = new QSignalMapper(this);
-        QRadioButton* rdbColorRandom  = new QRadioButton("Random");
-        QRadioButton* rdbColorRamp    = new QRadioButton("Ramp");
-        QRadioButton* rdbColorUniform = new QRadioButton("Uniform Color");
-        QRadioButton* rdbColorObjIdx  = new QRadioButton("Object Index");
-        rdbColorRamp->setChecked(vizType != VisualizationType::TriangleMesh);
-        rdbColorUniform->setChecked(vizType == VisualizationType::GhostBoundaryParticle || vizType == VisualizationType::TriangleMesh);
-        ////////////////////////////////////////////////////////////////////////////////
-        m_ColorModeGroups[vizType] = new QButtonGroup;
-        m_ColorModeGroups[vizType]->addButton(rdbColorRandom);
-        m_ColorModeGroups[vizType]->addButton(rdbColorRamp);
-        m_ColorModeGroups[vizType]->addButton(rdbColorUniform);
-        m_ColorModeGroups[vizType]->addButton(rdbColorObjIdx);
-        m_loDiffuseColorModes[vizType]->addWidget(rdbColorRandom,  0, 0, 1, 1);
-        m_loDiffuseColorModes[vizType]->addWidget(rdbColorRamp,    0, 1, 1, 1);
-        m_loDiffuseColorModes[vizType]->addWidget(rdbColorUniform, 1, 0, 1, 1);
-        m_loDiffuseColorModes[vizType]->addWidget(rdbColorObjIdx,  1, 1, 1, 1);
-        ////////////////////////////////////////////////////////////////////////////////
-        connect(rdbColorRandom,  SIGNAL(clicked()), m_smColorMode[vizType], SLOT(map()));
-        connect(rdbColorRamp,    SIGNAL(clicked()), m_smColorMode[vizType], SLOT(map()));
-        connect(rdbColorUniform, SIGNAL(clicked()), m_smColorMode[vizType], SLOT(map()));
-        connect(rdbColorObjIdx,  SIGNAL(clicked()), m_smColorMode[vizType], SLOT(map()));
-        ////////////////////////////////////////////////////////////////////////////////
-        m_smColorMode[vizType]->setMapping(rdbColorRandom,  static_cast<int>(RenderColorMode::Random));
-        m_smColorMode[vizType]->setMapping(rdbColorRamp,    static_cast<int>(RenderColorMode::Ramp));
-        m_smColorMode[vizType]->setMapping(rdbColorUniform, static_cast<int>(RenderColorMode::UniformColor));
-        m_smColorMode[vizType]->setMapping(rdbColorObjIdx,  static_cast<int>(RenderColorMode::ObjectIndex));
-        if(vizType == VisualizationType::TriangleMesh) {
-            rdbColorRandom->setDisabled(true);
-            rdbColorRamp->setDisabled(true);
-            rdbColorObjIdx->setDisabled(true);
-        }
-        layoutMaterial->addLayout(m_loDiffuseColorModes[vizType]);
-        if(vizType > 0) {
-            QtAppUtils::setVisibleAll(m_loDiffuseColorModes[vizType], false);
-        }
-    }
+    m_smColorMode = new QSignalMapper(this);
+    QRadioButton* rdbColorRandom  = new QRadioButton("Random");
+    QRadioButton* rdbColorRamp    = new QRadioButton("Ramp");
+    QRadioButton* rdbColorUniform = new QRadioButton("Uniform Color");
+    rdbColorRamp->setChecked(true);
+    ////////////////////////////////////////////////////////////////////////////////
+    QGridLayout* layoutDiffuseColorModes = new QGridLayout;
+    layoutDiffuseColorModes->addWidget(rdbColorRandom,  0, 0, 1, 1);
+    layoutDiffuseColorModes->addWidget(rdbColorRamp,    0, 1, 1, 1);
+    layoutDiffuseColorModes->addWidget(rdbColorUniform, 1, 0, 1, 1);
+    ////////////////////////////////////////////////////////////////////////////////
+    connect(rdbColorRandom,  SIGNAL(clicked()), m_smColorMode, SLOT(map()));
+    connect(rdbColorRamp,    SIGNAL(clicked()), m_smColorMode, SLOT(map()));
+    connect(rdbColorUniform, SIGNAL(clicked()), m_smColorMode, SLOT(map()));
+    ////////////////////////////////////////////////////////////////////////////////
+    m_smColorMode->setMapping(rdbColorRandom,  static_cast<int>(RenderColorMode::Random));
+    m_smColorMode->setMapping(rdbColorRamp,    static_cast<int>(RenderColorMode::Ramp));
+    m_smColorMode->setMapping(rdbColorUniform, static_cast<int>(RenderColorMode::UniformColor));
+    layoutMaterial->addLayout(layoutDiffuseColorModes);
     QGroupBox* grMaterial = new QGroupBox("Material");
     grMaterial->setLayout(layoutMaterial);
     m_LayoutMainControllers->addWidget(grMaterial);
-    ////////////////////////////////////////////////////////////////////////////////
-    m_chkOverrideDiffuseColor = new QCheckBox("Randomize diffuse color");
-    QVBoxLayout* layoutOverrideDiffuseColor = new QVBoxLayout;
-    layoutOverrideDiffuseColor->addWidget(m_chkOverrideDiffuseColor);
-    QHBoxLayout* layoutRndColor = new QHBoxLayout;
-    for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes() - 1; ++vizType) {
-        m_pkrColor[vizType] = new ColorPicker;
-        m_pkrColor[vizType]->setColor(DefaultVisualizationParameters::DefaultRenderMaterials[vizType].diffuse);
-        layoutRndColor->addStretch(1);
-        layoutRndColor->addWidget(m_pkrColor[vizType], 10);
-        layoutRndColor->addStretch(1);
-        connect(m_pkrColor[vizType], &ColorPicker::colorChanged, [&, vizType](float r, float g, float b) {
-                    m_RenderWidget->setRandomizedDiffuseColor(vizType, r, g, b);
-                });
-    }
-    layoutRndColor->addStretch(1);
-    m_btnRndAllColor = new QPushButton("Rnd");
-    layoutRndColor->addWidget(m_btnRndAllColor, 10);
-    layoutOverrideDiffuseColor->addWidget(QtAppUtils::getLineSeparator());
-    layoutOverrideDiffuseColor->addSpacing(5);
-    layoutOverrideDiffuseColor->addLayout(layoutRndColor);
-    ////////////////////////////////////////////////////////////////////////////////
-    QVBoxLayout* layoutColorCtrls = new QVBoxLayout;
-    layoutColorCtrls->addLayout(layoutOverrideDiffuseColor);
-    ////////////////////////////////////////////////////////////////////////////////
-    QGroupBox* grColorMode = new QGroupBox("Override Diffuse Color");
-    grColorMode->setLayout(layoutColorCtrls);
-    m_LayoutMainControllers->addWidget(grColorMode);
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -458,65 +317,7 @@ void Controller::setupInputControllers() {
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void Controller::setupParticleVizButtons() {
-    m_btnHideVisualization[VisualizationType::StandardMPMParticle]   = new QPushButton("Hide Standard");
-    m_btnHideVisualization[VisualizationType::VertexParticle]        = new QPushButton("Hide Vertex");
-    m_btnHideVisualization[VisualizationType::QuadratureParticle]    = new QPushButton("Hide Quad");
-    m_btnHideVisualization[VisualizationType::GhostBoundaryParticle] = new QPushButton("Hide Ghost");
-    m_btnHideVisualization[VisualizationType::ParticleOrientation]   = new QPushButton("Hide Orientation");
-    m_btnHideVisualization[VisualizationType::TriangleMesh]          = new QPushButton("Hide Mesh");
-    for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes(); ++vizType) {
-        m_btnHideVisualization[vizType]->setCheckable(true);
-    }
-    m_btnHideVisualization[VisualizationType::ParticleOrientation]->setChecked(true);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::StandardMPMParticle],   m_nButtonRows,   0, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::VertexParticle],        m_nButtonRows++, 1, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::QuadratureParticle],    m_nButtonRows,   0, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::GhostBoundaryParticle], m_nButtonRows++, 1, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::ParticleOrientation],   m_nButtonRows,   0, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::TriangleMesh],          m_nButtonRows++, 1, 1, 1);
-
-    m_btnPause = new QPushButton(QString("Pause"));
-    m_btnPause->setCheckable(true);
-    m_btnNextFrame = new QPushButton(QString("Next Frame"));
-    m_btnReset     = new QPushButton(QString("Reset"));
-    m_btnReverse   = new QPushButton(QString("Reverse"));
-    m_btnReverse->setCheckable(true);
-    m_btnRepeatPlay = new QPushButton(QString("Repeat"));
-    m_btnRepeatPlay->setCheckable(true);
-    ////////////////////////////////////////////////////////////////////////////////
-    this->m_LayoutButtons->addWidget(QtAppUtils::getLineSeparator(), m_nButtonRows++, 0, 1, 2);
-
-    QHBoxLayout* loResetReverseRepeat = new QHBoxLayout;
-    loResetReverseRepeat->addWidget(m_btnReset);
-    loResetReverseRepeat->addWidget(m_btnReverse);
-    loResetReverseRepeat->addWidget(m_btnRepeatPlay);
-    this->m_LayoutButtons->addLayout(loResetReverseRepeat, m_nButtonRows++, 0, 1, 2);
-
-    this->m_LayoutButtons->addWidget(m_btnPause, m_nButtonRows, 0, 1, 1);
-    this->m_LayoutButtons->addWidget(m_btnNextFrame, m_nButtonRows++, 1, 1, 1);
-}
-
-//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::setupDataPlayerButtons() {
-    return;
-    m_btnHideVisualization[VisualizationType::StandardMPMParticle]   = new QPushButton("Hide Standard");
-    m_btnHideVisualization[VisualizationType::VertexParticle]        = new QPushButton("Hide Vertex");
-    m_btnHideVisualization[VisualizationType::QuadratureParticle]    = new QPushButton("Hide Quad");
-    m_btnHideVisualization[VisualizationType::GhostBoundaryParticle] = new QPushButton("Hide Ghost");
-    m_btnHideVisualization[VisualizationType::ParticleOrientation]   = new QPushButton("Hide Orientation");
-    m_btnHideVisualization[VisualizationType::TriangleMesh]          = new QPushButton("Hide Mesh");
-    for(int vizType = 0; vizType < VisualizationType::nVisualizationTypes(); ++vizType) {
-        m_btnHideVisualization[vizType]->setCheckable(true);
-    }
-    m_btnHideVisualization[VisualizationType::ParticleOrientation]->setChecked(true);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::StandardMPMParticle],   m_nButtonRows,   0, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::VertexParticle],        m_nButtonRows++, 1, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::QuadratureParticle],    m_nButtonRows,   0, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::GhostBoundaryParticle], m_nButtonRows++, 1, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::ParticleOrientation],   m_nButtonRows,   0, 1, 1);
-    m_LayoutButtons->addWidget(m_btnHideVisualization[VisualizationType::TriangleMesh],          m_nButtonRows++, 1, 1, 1);
-
     m_btnPause = new QPushButton(QString("Pause"));
     m_btnPause->setCheckable(true);
     m_btnNextFrame = new QPushButton(QString("Next Frame"));

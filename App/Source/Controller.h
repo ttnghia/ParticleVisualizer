@@ -28,9 +28,8 @@ class Controller : public OpenGLController {
 public:
     explicit Controller(RenderWidget* renderWidget, DataReader* dataReader, QWidget* parent = nullptr, int width = 300);
     JParams updateVisualizationParameters(const QString& sceneFile); // return jparams for visualization parameters
-    void    setParticleDiffuseColorMode(int vizType, int colorMode);
-    void    setMaterial(int vizType, const MaterialData& materialData);
-    void    hideVisualization(int vizType, bool bHide);
+    void    setParticleDiffuseColorMode(int colorMode);
+    void    setMaterial(const MaterialData& materialData);
     void    browseOutputPath();
 
     void browseInputPath();
@@ -51,16 +50,9 @@ protected:
 
     ////////////////////////////////////////////////////////////////////////////////
     void setupColorControllers();
-    EnhancedComboBox* m_cbVizType;
-    int               m_MaterialActiveIndex;
-    MaterialSelector* m_msMaterial[VisualizationType::nVisualizationTypes() - 1];
-    QSignalMapper*    m_smColorMode[VisualizationType::nVisualizationTypes() - 1];
-    QGridLayout*      m_loDiffuseColorModes[VisualizationType::nVisualizationTypes() - 1];
-    QButtonGroup*     m_ColorModeGroups[VisualizationType::nVisualizationTypes() - 1];
-
-    QCheckBox*   m_chkOverrideDiffuseColor;
-    QPushButton* m_btnRndAllColor;
-    ColorPicker* m_pkrColor[VisualizationType::nVisualizationTypes() - 1];
+    MaterialSelector* m_msMaterial;
+    QSignalMapper*    m_smColorMode;
+    ColorPicker*      m_pkrColor;
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -83,9 +75,7 @@ protected:
 
     ////////////////////////////////////////////////////////////////////////////////
     // buttons
-    void setupParticleVizButtons();
     void setupDataPlayerButtons();
-    QPushButton* m_btnHideVisualization[VisualizationType::nVisualizationTypes()];
     QPushButton* m_btnPause;
     QPushButton* m_btnNextFrame;
     QPushButton* m_btnReset;

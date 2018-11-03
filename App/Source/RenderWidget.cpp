@@ -69,10 +69,6 @@ void RenderWidget::updateSystemDimension() {
         m_Camera->setOrthoBox(m_VizData->domainBMin.x * 1.02f, m_VizData->domainBMax.x * 1.02f,
                               m_VizData->domainBMin.y * 1.02f, m_VizData->domainBMax.y * 1.02f);
     }
-
-    makeCurrent();
-    initParticleVAO();
-    doneCurrent();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

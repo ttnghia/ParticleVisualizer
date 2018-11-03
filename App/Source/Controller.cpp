@@ -211,14 +211,15 @@ void Controller::connectWidgets() {
                 ////////////////////////////////////////////////////////////////////////////////
                 QDir dataDir(dataPath);
                 dataDir.setNameFilters(QStringList() << "*.json");
-                __NT_REQUIRE(dataDir.entryList().count() != 0);
-                QString sceneFile = dataPath + "/" + dataDir.entryList()[0];
-                auto jVizParams   = updateVisualizationParameters(sceneFile);
-                if(Int frameDelay; JSONHelpers::readValue(jVizParams, frameDelay, "FrameDelay")) {
-                    m_sldFrameDelay->setValue(frameDelay);
-                }
-                if(Int frameStep; JSONHelpers::readValue(jVizParams, frameStep, "FrameStep")) {
-                    m_sldFrameStep->setValue(frameStep);
+                if(dataDir.entryList().count() != 0) {
+                    QString sceneFile = dataPath + "/" + dataDir.entryList()[0];
+                    auto jVizParams   = updateVisualizationParameters(sceneFile);
+                    if(Int frameDelay; JSONHelpers::readValue(jVizParams, frameDelay, "FrameDelay")) {
+                        m_sldFrameDelay->setValue(frameDelay);
+                    }
+                    if(Int frameStep; JSONHelpers::readValue(jVizParams, frameStep, "FrameStep")) {
+                        m_sldFrameStep->setValue(frameStep);
+                    }
                 }
             });
     ////////////////////////////////////////////////////////////////////////////////

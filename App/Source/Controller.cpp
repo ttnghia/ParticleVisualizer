@@ -48,40 +48,33 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
         nlohmann::json jParams = nlohmann::json::parse(inFile);
         inFile.close();
         ////////////////////////////////////////////////////////////////////////////////
-        if(JSONHelpers::readValue(jParams, m_RenderWidget->getVizData()->systemDimension, "Dimension")) {
-            __NT_REQUIRE(m_RenderWidget->getVizData()->systemDimension == 2 ||
-                         m_RenderWidget->getVizData()->systemDimension == 3);
-            m_RenderWidget->updateSystemDimension();
-        }
-
-        __NT_REQUIRE(jParams.find("SimulationParameters") != jParams.end());
+        __NT_REQUIRE(jParams.find("VisualizationParameters") != jParams.end());
+        auto jVizParams = jParams["VisualizationParameters"];
         {
-            JParams jSimParams = jParams["SimulationParameters"];
-            __NT_REQUIRE(jSimParams.find("SimulationDomainBox") != jSimParams.end());
-            {
-                JParams jBoxParams = jSimParams["SimulationDomainBox"];
-                jBoxParams["GeometryType"] = String("Box");
-                auto box = GeometryObjects::BoxObject<3, float>(jBoxParams);
-                m_RenderWidget->getVizData()->domainBMin = box.getTransformedBoxMin() - Vec3f(m_RenderWidget->getVizData()->particleRadius);
-                m_RenderWidget->getVizData()->domainBMax = box.getTransformedBoxMax() + Vec3f(m_RenderWidget->getVizData()->particleRadius);
-                m_RenderWidget->setBox(m_RenderWidget->getVizData()->domainBMin, m_RenderWidget->getVizData()->domainBMax);
+            ////////////////////////////////////////////////////////////////////////////////
+            if(JSONHelpers::readValue(jVizParams, m_RenderWidget->getVizData()->systemDimension, "Dimension")) {
+                __NT_REQUIRE(m_RenderWidget->getVizData()->systemDimension == 2 ||
+                             m_RenderWidget->getVizData()->systemDimension == 3);
                 m_RenderWidget->updateSystemDimension();
             }
-        }
-        ////////////////////////////////////////////////////////////////////////////////
-        if(jParams.find("VisualizationParameters") != jParams.end()) {
-            auto jVizParams = jParams["VisualizationParameters"];
+            ////////////////////////////////////////////////////////////////////////////////
+            // box
+            if(jVizParams.find("DomainBox") != jVizParams.end()) {
+                JParams jBoxParams = jVizParams["DomainBox"];
+                JSONHelpers::readVector(jBoxParams, m_RenderWidget->getVizData()->domainBMin, "BoxMin");
+                JSONHelpers::readVector(jBoxParams, m_RenderWidget->getVizData()->domainBMax, "BoxMax");
+                m_RenderWidget->updateSystemDimension();
+            }
+            if(bool bRender; JSONHelpers::readBool(jVizParams, bRender, "RenderDomainBox")) {
+                this->m_chkRenderBox->setChecked(bRender);
+            } else {
+                this->m_chkRenderBox->setChecked(true);
+            }
             ////////////////////////////////////////////////////////////////////////////////
             if(Vec3f backgroundColor; JSONHelpers::readVector(jVizParams, backgroundColor, "BackgroundColor")) {
                 m_RenderWidget->setClearColor(backgroundColor);
             } else {
                 m_RenderWidget->setClearColor(QtAppUtils::getDefaultClearColor());
-            }
-
-            if(bool bRender; JSONHelpers::readBool(jVizParams, bRender, "RenderDomainBox")) {
-                this->m_chkRenderBox->setChecked(bRender);
-            } else {
-                this->m_chkRenderBox->setChecked(true);
             }
             ////////////////////////////////////////////////////////////////////////////////
             if(!JSONHelpers::readVector(jVizParams, m_RenderWidget->getVizData()->cameraPosition, "CameraPosition")) {

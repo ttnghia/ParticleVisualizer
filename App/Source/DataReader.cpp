@@ -43,6 +43,7 @@ void DataReader::setSequenceFile(const QString& sampleFileName) {
         resetData();
         auto dataFolder = QFileInfo(sampleFileName).dir();
         m_DataDirWatcher->addPath(dataFolder.absolutePath());
+        m_SampleFileName = sampleFileName;
         m_bValidDataPath = true;
         countFrames();
         emit inputSequenceAccepted(sampleFileName);

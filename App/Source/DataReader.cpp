@@ -199,8 +199,9 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
         readParticles(file, m_VizData->buffPositions2D, bSuccess, nBytesRead);
         m_VizData->particlePositionPtrs = reinterpret_cast<char*>(m_VizData->buffPositions2D.data());
     }
-    if(!m_VizData->bRadiusOverrided) {
+    if(!m_VizData->bRadiusOverrided && m_VizData->particleRadius < float(1.0e-10)) {
         m_VizData->computeParticleRadius();
+        particleRadiusChanged(m_VizData->particleRadius);
     }
     ////////////////////////////////////////////////////////////////////////////////
     if(nParticles != m_VizData->nParticles) {

@@ -38,6 +38,7 @@ public:
 
 public slots:
     void setInputPath(const QString& dataPath);
+    void setParticleRadius(float radius);
 
 protected:
     void connectWidgets();

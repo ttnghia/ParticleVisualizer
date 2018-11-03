@@ -35,8 +35,6 @@ DataReader::DataReader(const SharedPtr<VisualizationData>& vizData) : m_VizData(
     connect(m_DataDirWatcher,  &QFileSystemWatcher::directoryChanged, this, &DataReader::countFrames);
     connect(m_AutoTimer.get(), &QTimer::timeout,                      this, &DataReader::readNextFrameByTimer);
     m_AutoTimer->start(0);
-
-    analyzeSequence("D:/program/simulationframe.0001.bgeo");
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -126,7 +124,8 @@ void DataReader::countFrames() {
     try {
         while(true) {
             QString file = getFilePath(nFrames);
-            if(QFileInfo::exists(file)) {
+            qDebug() << file;
+            if(QFileInfo::exists(file) || nFrames == 0) {
                 ++nFrames;
             } else {
                 break;

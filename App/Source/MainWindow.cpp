@@ -34,7 +34,7 @@ MainWindow::MainWindow(QWidget* parent) : OpenGLMainWindow(parent), m_DataList(n
     ////////////////////////////////////////////////////////////////////////////////
     setArthurStyle();
     setFocusPolicy(Qt::StrongFocus);
-    setWindowTitle("Data Player");
+    setWindowTitle("Particle Visualizer");
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -117,7 +117,7 @@ void MainWindow::showEvent(QShowEvent* ev) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void MainWindow::updateWindowTitle(const QString& filePath) {
-    setWindowTitle(QString("Data Player: ") + filePath);
+    setWindowTitle(QString("Particle Visualizer: ") + filePath);
 }
 
 void MainWindow::updateStatusCurrentFrame(int currentFrame) {

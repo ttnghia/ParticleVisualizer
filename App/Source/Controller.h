@@ -40,7 +40,6 @@ public slots:
     void setInputPath(const QString& dataPath);
 
 protected:
-    void setupGUI();
     void connectWidgets();
 
     ////////////////////////////////////////////////////////////////////////////////

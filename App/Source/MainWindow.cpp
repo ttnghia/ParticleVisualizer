@@ -125,7 +125,7 @@ void MainWindow::updateStatusCurrentFrame(int currentFrame) {
 }
 
 void MainWindow::updateStatusNumParticles() {
-    String status = String("Num. primitives: ") + Formatters::toString(m_RenderWidget->getVizData()->nParticles);
+    String status = String("Num. particles: ") + Formatters::toString(m_RenderWidget->getVizData()->nParticles);
     m_lblStatusNumVizPrimitives->setText(QString::fromStdString(status));
 }
 

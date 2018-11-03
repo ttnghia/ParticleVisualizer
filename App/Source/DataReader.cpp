@@ -189,7 +189,7 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
                                  bSuccess = ParticleHelpers::loadParticlesFromObj(fileName, buffer);
                              }
                              nParticles = static_cast<UInt>(buffer.size());
-                             nBytesRead = buffer.size() * sizeof(Vec3f);
+                             nBytesRead = buffer.size() * sizeof(buffer.front());
                              return nParticles;
                          };
     if(m_VizData->systemDimension == 3) {

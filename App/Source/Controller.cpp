@@ -63,6 +63,7 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
                 JParams jBoxParams = jVizParams["DomainBox"];
                 JSONHelpers::readVector(jBoxParams, m_RenderWidget->getVizData()->domainBMin, "BoxMin");
                 JSONHelpers::readVector(jBoxParams, m_RenderWidget->getVizData()->domainBMax, "BoxMax");
+                m_RenderWidget->setBox(m_RenderWidget->getVizData()->domainBMin, m_RenderWidget->getVizData()->domainBMax);
                 m_RenderWidget->updateSystemDimension();
             }
             if(bool bRender; JSONHelpers::readBool(jVizParams, bRender, "RenderDomainBox")) {

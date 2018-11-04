@@ -88,10 +88,10 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
             ////////////////////////////////////////////////////////////////////////////////
             if(float radius; JSONHelpers::readValue(jVizParams, radius, "OverrideParticleRadius")) {
                 m_chkOverrideParticleRadius->setChecked(true);
-                m_txtParticleRadius->setText(QString("%1").arg(radius));
+                m_txtOveridePRadius->setText(QString("%1").arg(radius));
             } else {
                 m_chkOverrideParticleRadius->setChecked(false);
-                m_txtParticleRadius->setText(QString(""));
+                m_txtOveridePRadius->setText(QString(""));
             }
             ////////////////////////////////////////////////////////////////////////////////
             if(String capturePath; JSONHelpers::readValue(jVizParams, capturePath, "CapturePath")) {
@@ -201,7 +201,7 @@ void Controller::setInputPath(const QString& dataPath) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::setParticleRadius(float radius) {
-    m_txtParticleRadius->setText(QString("%1").arg(radius));
+    m_txtEstimatePRadius->setText(QString("%1").arg(radius));
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -242,13 +242,13 @@ void Controller::connectWidgets() {
                 m_RenderWidget->getVizData()->bRadiusOverrided = bChecked;
                 if(bChecked) {
                     try {
-                        m_RenderWidget->getVizData()->particleRadius = std::stof(m_txtParticleRadius->text().toStdString());
+                        m_RenderWidget->getVizData()->particleRadius = std::stof(m_txtOveridePRadius->text().toStdString());
                     } catch(std::exception&) {}
                 } else {
                     m_DataReader->computeParticleRadius();
                 }
             });
-    connect(m_txtParticleRadius, &QLineEdit::textChanged, [&](const QString& txt) {
+    connect(m_txtOveridePRadius, &QLineEdit::textChanged, [&](const QString& txt) {
                 if(m_RenderWidget->getVizData()->bRadiusOverrided && txt != "") {
                     try {
                         m_RenderWidget->getVizData()->particleRadius = std::stof(txt.toStdString());
@@ -346,12 +346,18 @@ void Controller::setupInputControllers() {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::setupParticleRadiusControllers() {
-    m_chkOverrideParticleRadius = new QCheckBox("Override radius: ");
-    m_txtParticleRadius         = new QLineEdit;
-    m_txtParticleRadius->setText("0.01");
-    QHBoxLayout* layoutPRadius = new QHBoxLayout;
-    layoutPRadius->addWidget(m_chkOverrideParticleRadius);
-    layoutPRadius->addWidget(m_txtParticleRadius);
+    m_txtEstimatePRadius = new QLineEdit;
+    m_txtEstimatePRadius->setEnabled(false);
+    QGridLayout* layoutPRadius = new QGridLayout;
+    layoutPRadius->addWidget(new QLabel("Estimate radius: "), 0, 0, 1, 1);
+    layoutPRadius->addWidget(m_txtEstimatePRadius,            0, 1, 1, 1);
+    ////////////////////////////////////////////////////////////////////////////////
+    m_chkOverrideParticleRadius = new QCheckBox("Override radius by: ");
+    m_txtOveridePRadius         = new QLineEdit;
+    m_txtOveridePRadius->setText("0.01");
+    layoutPRadius->addWidget(m_chkOverrideParticleRadius, 1, 0, 1, 1);
+    layoutPRadius->addWidget(m_txtOveridePRadius,         1, 1, 1, 1);
+    ////////////////////////////////////////////////////////////////////////////////
     QGroupBox* grpPRadius = new QGroupBox;
     grpPRadius->setTitle("Particle Radius");
     grpPRadius->setLayout(layoutPRadius);

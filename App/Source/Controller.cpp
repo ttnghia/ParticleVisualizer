@@ -330,7 +330,7 @@ void Controller::setupFrameControllers() {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::setupInputControllers() {
-    m_InputPath = new BrowsePathWidget("Browse");
+    m_InputPath = new BrowsePathWidget("Browse", false);
     QGroupBox* grpInput = new QGroupBox;
     grpInput->setTitle("Input");
     grpInput->setLayout(m_InputPath->getLayout());

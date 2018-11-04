@@ -86,6 +86,11 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
             }
             m_RenderWidget->updateCamera();
             ////////////////////////////////////////////////////////////////////////////////
+            if(float radius; JSONHelpers::readValue(jVizParams, radius, "OverrideParticleRadius")) {
+                m_chkOverrideParticleRadius->setChecked(true);
+                m_txtParticleRadius->setText(QString("%1").arg(radius));
+            }
+            ////////////////////////////////////////////////////////////////////////////////
             if(String capturePath; JSONHelpers::readValue(jVizParams, capturePath, "CapturePath")) {
                 m_OutputPath->setPath(QString::fromStdString(capturePath));
             } else {
@@ -93,7 +98,7 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
             }
             ////////////////////////////////////////////////////////////////////////////////
             setMaterial(DefaultVisualizationParameters::DefaultRenderMaterial);
-            if(jVizParams.find("ColorAndMaterials") != jVizParams.end()) {
+            if(jVizParams.find("ColorAndMaterial") != jVizParams.end()) {
                 auto name2ColorMode = [](const auto& name) -> int {
                                           if(name == "Uniform") {
                                               return RenderColorMode::UniformColor;
@@ -105,19 +110,18 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
                                           __NT_DIE("Invalid color mode!");
                                           return -1; // to disable warning
                                       };
-                for(auto& jColorMaterial :jVizParams["ColorAndMaterials"]) {
-                    if(String colorMode; JSONHelpers::readValue(jColorMaterial, colorMode, "ColorMode")) {
-                        setParticleDiffuseColorMode(name2ColorMode(colorMode));
-                    }
-                    if(jColorMaterial.find("Material") != jColorMaterial.end()) {
-                        auto& jMaterial    = jColorMaterial["Material"];
-                        auto  materialData = DefaultVisualizationParameters::DefaultRenderMaterial;
-                        JSONHelpers::readVector(jMaterial, materialData.ambient,  "Ambient");
-                        JSONHelpers::readVector(jMaterial, materialData.diffuse,  "Diffuse");
-                        JSONHelpers::readVector(jMaterial, materialData.specular, "Specular");
-                        JSONHelpers::readValue(jMaterial, materialData.shininess, "Shininess");
-                        setMaterial(materialData);
-                    }
+                auto& jColorMaterial = jVizParams["ColorAndMaterial"];
+                if(String colorMode; JSONHelpers::readValue(jColorMaterial, colorMode, "ColorMode")) {
+                    setParticleDiffuseColorMode(name2ColorMode(colorMode));
+                }
+                if(jColorMaterial.find("Material") != jColorMaterial.end()) {
+                    auto& jMaterial    = jColorMaterial["Material"];
+                    auto  materialData = DefaultVisualizationParameters::DefaultRenderMaterial;
+                    JSONHelpers::readVector(jMaterial, materialData.ambient,  "Ambient");
+                    JSONHelpers::readVector(jMaterial, materialData.diffuse,  "Diffuse");
+                    JSONHelpers::readVector(jMaterial, materialData.specular, "Specular");
+                    JSONHelpers::readValue(jMaterial, materialData.shininess, "Shininess");
+                    setMaterial(materialData);
                 }
             }
 

@@ -1,1 +1,3 @@
 ../DataExample/TwoDragons/two_dragons.0.bgeo
+../DataExample/BunnyFluid/frame.0001.pos
+../DataExample/StrandCollisions/frame.1.obj

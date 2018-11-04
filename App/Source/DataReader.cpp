@@ -23,6 +23,7 @@
 #include <fstream>
 #include <QDir>
 #include <QDebug>
+#include <QtConcurrent>
 
 #include "DataReader.h"
 #include "VisualizationData.h"
@@ -39,6 +40,9 @@ DataReader::DataReader(const SharedPtr<VisualizationData>& vizData) : m_VizData(
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void DataReader::setSequenceFile(const QString& sampleFileName) {
+    if(m_ReadFrameFutureObj.isRunning()) {
+        m_ReadFrameFutureObj.waitForFinished();
+    }
     if(analyzeSequence(sampleFileName)) {
         resetData();
         auto dataFolder = QFileInfo(sampleFileName).dir().absolutePath();
@@ -145,11 +149,18 @@ void DataReader::countFrames() {
         emit numFramesChanged(m_nFrames);
     }
     m_EndFrame = m_StartFrame + m_nFrames - 1;
+    if(m_CurrentFrame > m_EndFrame) {
+        m_CurrentFrame = m_EndFrame - 1;
+        readNextFrame();
+    }
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void DataReader::readNextFrame(bool bBackward /*= false*/) {
     if(m_VizData->bCaptureImage && !m_VizData->bCaptureImageSaved) {
+        return;
+    }
+    if(m_ReadFrameFutureObj.isRunning()) {
         return;
     }
     int nextFrame = (m_bReverse ^ bBackward) ? m_CurrentFrame - m_FrameStep : m_CurrentFrame + m_FrameStep;
@@ -161,7 +172,7 @@ void DataReader::readNextFrame(bool bBackward /*= false*/) {
     } else if(nextFrame > m_EndFrame) {
         nextFrame = m_StartFrame;
     }
-    readFrame(nextFrame);
+    m_ReadFrameFutureObj = QtConcurrent::run([&, nextFrame] { readFrame(nextFrame); });
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -185,13 +196,11 @@ void DataReader::readFrame(int frame) {
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
+std::pair<bool, UInt> DataReader::readFrameData(int frameID) {
     bool   bSuccess   = false;
-    size_t nBytesRead = 0;
+    UInt   nBytesRead = 0;
     UInt   nParticles = 0;
     String file       = getFilePath(frameID).toStdString();
-    qDebug() << file.c_str();
-
     ////////////////////////////////////////////////////////////////////////////////
     auto readParticles = [&](const auto& fileName, auto& buffer, auto& bSuccess, auto& nBytesRead) {
                              buffer.resize(0);
@@ -203,7 +212,7 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
                                  bSuccess = ParticleHelpers::loadParticlesFromObj(fileName, buffer);
                              }
                              nParticles = static_cast<UInt>(buffer.size());
-                             nBytesRead = buffer.size() * sizeof(buffer.front());
+                             nBytesRead = static_cast<UInt>(buffer.size() * sizeof(buffer.front()));
                              return nParticles;
                          };
     if(m_VizData->systemDimension == 3) {

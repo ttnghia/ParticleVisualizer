@@ -16,6 +16,7 @@
 #include <QObject>
 #include <QFileSystemWatcher>
 #include <QTimer>
+#include <QFuture>
 
 #include <LibCommon/CommonSetup.h>
 #include <LibQtApps/Forward.h>
@@ -65,7 +66,7 @@ signals:
     void particleRadiusChanged(float radius);
     void numFramesChanged(int numFrames);
     void currentFrameChanged(int currentFrame);
-    void frameReadInfoChanged(double readTime, size_t bytes);
+    void frameReadInfoChanged(double readTime, unsigned int bytes);
 
 public slots:
     void setFrameDelayTime(int delayTime) { m_AutoTimer->setInterval(delayTime); }
@@ -92,6 +93,7 @@ private:
 
     SharedPtr<AvgTimer> m_ReadTimer;
     SharedPtr<QTimer>   m_AutoTimer = nullptr;
+    QFuture<void>       m_ReadFrameFutureObj;
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////
@@ -100,5 +102,5 @@ signals:
     void numVizPrimitivesChanged();
     void vizDataChanged(int currentFrame);
 private:
-    std::pair<bool, size_t> readFrameData(int frameID);
+    std::pair<bool, UInt> readFrameData(int frameID);
 };

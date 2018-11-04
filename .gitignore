@@ -2,4 +2,5 @@
 **/*.db
 **/*.opendb
 Build
+App/Prebuild
 ParticleVisualizer.pro.user

@@ -42,22 +42,12 @@ void DataReader::setSequenceFile(const QString& sampleFileName) {
     if(analyzeSequence(sampleFileName)) {
         resetData();
         auto dataFolder = QFileInfo(sampleFileName).dir().absolutePath();
+        m_WatchingPath = dataFolder;
         m_DataDirWatcher->addPath(dataFolder);
         m_SampleFileName = sampleFileName;
         m_bValidDataPath = true;
-        ////////////////////////////////////////////////////////////////////////////////
         countFrames();
-        for(int frameID = 0; frameID < m_nFrames; ++frameID) {
-            qDebug() << frameID;
-            String file = getFilePath(frameID).toStdString();
-            if(FileHelpers::fileExisted(file)) {
-                m_StartFrame   = frameID;
-                m_EndFrame     = m_nFrames + m_StartFrame - 1;
-                m_CurrentFrame = m_StartFrame;
-                break;
-            }
-        }
-        ////////////////////////////////////////////////////////////////////////////////
+        m_CurrentFrame = m_StartFrame - 1;
         emit inputSequenceAccepted(dataFolder);
     }
 }
@@ -132,12 +122,17 @@ QString DataReader::getFilePath(int idx) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void DataReader::countFrames() {
-    UInt nFrames = 0;
+    QDir dataDir(m_WatchingPath);
+    dataDir.setFilter(QDir::NoDotAndDotDot | QDir::AllEntries);
+    dataDir.setNameFilters(QStringList() << ("*" + m_FileExtensionStr));
+    UInt nFrames = dataDir.entryList().count();
+    ////////////////////////////////////////////////////////////////////////////////
+    m_StartFrame = 0;
     try {
         while(true) {
-            QString file = getFilePath(nFrames);
-            if(QFileInfo::exists(file) || nFrames == 0) {
-                ++nFrames;
+            QString file = getFilePath(m_StartFrame);
+            if(!QFileInfo::exists(file)) {
+                ++m_StartFrame;
             } else {
                 break;
             }
@@ -149,6 +144,7 @@ void DataReader::countFrames() {
         m_nFrames = nFrames;
         emit numFramesChanged(m_nFrames);
     }
+    m_EndFrame = m_StartFrame + m_nFrames - 1;
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -194,6 +190,8 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
     size_t nBytesRead = 0;
     UInt   nParticles = 0;
     String file       = getFilePath(frameID).toStdString();
+    qDebug() << file.c_str();
+
     ////////////////////////////////////////////////////////////////////////////////
     auto readParticles = [&](const auto& fileName, auto& buffer, auto& bSuccess, auto& nBytesRead) {
                              buffer.resize(0);

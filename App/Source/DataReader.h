@@ -73,7 +73,7 @@ public slots:
     void enableRepeat(bool bRepeat) { m_bRepeat = bRepeat; }
     void enableReverse(bool bReverse) { m_bReverse = bReverse; }
     void pause(bool bPaused) { m_bPause = bPaused; }
-    void readFirstFrame() { readFrame(0); }
+    void readFirstFrame() { readFrame(m_StartFrame); }
     void readLastFrame() { readFrame(m_EndFrame); }
     void readNextFrame(bool bBackward = false);
     void readPrevFrame() { readNextFrame(true); }

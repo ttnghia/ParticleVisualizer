@@ -29,9 +29,11 @@ class DataReader : public QObject {
     Q_OBJECT
 public:
     DataReader(const SharedPtr<VisualizationData>& vizData);
+    ~DataReader() { stopDataReader(); }
     void setSequenceFile(const QString& sampleFileName);
     void refresh() { setSequenceFile(m_SampleFileName); }
     void computeParticleRadius();
+    void stopDataReader();
 
 signals:
     void inputSequenceAccepted(const QString& dataFolder);

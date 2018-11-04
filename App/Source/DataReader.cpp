@@ -39,6 +39,14 @@ DataReader::DataReader(const SharedPtr<VisualizationData>& vizData) : m_VizData(
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void DataReader::stopDataReader() {
+    m_bPause = true;
+    if(m_ReadFrameFutureObj.isRunning()) {
+        m_ReadFrameFutureObj.waitForFinished();
+    }
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void DataReader::setSequenceFile(const QString& sampleFileName) {
     if(m_ReadFrameFutureObj.isRunning()) {
         m_ReadFrameFutureObj.waitForFinished();

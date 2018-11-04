@@ -38,8 +38,17 @@ MainWindow::MainWindow(QWidget* parent) : OpenGLMainWindow(parent), m_DataList(n
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+MainWindow::~MainWindow() {
+    m_DataReader->stopDataReader();
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 bool MainWindow::processKeyPressEvent(QKeyEvent* event) {
     switch(event->key()) {
+        case Qt::Key_Escape:
+            m_DataReader->stopDataReader();
+            OpenGLMainWindow::processKeyPressEvent(event);
+
         case Qt::Key_B:
             m_Controller->browseInputPath();
             return true;

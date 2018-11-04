@@ -22,6 +22,7 @@ class MainWindow : public OpenGLMainWindow {
 
 public:
     MainWindow(QWidget* parent = 0);
+    virtual ~MainWindow();
 
 protected:
     virtual bool processKeyPressEvent(QKeyEvent* event) override;

@@ -75,6 +75,9 @@ bool DataReader::analyzeSequence(const QString& sampleFileName) {
     if(extension.toUpper() == "BIN") {
         m_FileExtension    = FileExtensions::BIN;
         m_FileExtensionStr = QString(".bin");
+    } else if(extension.toUpper() == "POS") {
+        m_FileExtension    = FileExtensions::BIN;
+        m_FileExtensionStr = QString(".pos");
     } else if(extension.toUpper() == "BGEO") {
         m_FileExtension    = FileExtensions::BGEO;
         m_FileExtensionStr = QString(".bgeo");
@@ -179,6 +182,7 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
     size_t nBytesRead = 0;
     UInt   nParticles = 0;
     String file       = getFilePath(frameID).toStdString();
+    qDebug() << file.c_str();
     ////////////////////////////////////////////////////////////////////////////////
     auto readParticles = [&](const auto& fileName, auto& buffer, auto& bSuccess, auto& nBytesRead) {
                              buffer.resize(0);

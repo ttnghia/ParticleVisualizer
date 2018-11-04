@@ -45,7 +45,19 @@ void DataReader::setSequenceFile(const QString& sampleFileName) {
         m_DataDirWatcher->addPath(dataFolder);
         m_SampleFileName = sampleFileName;
         m_bValidDataPath = true;
+        ////////////////////////////////////////////////////////////////////////////////
         countFrames();
+        for(int frameID = 0; frameID < m_nFrames; ++frameID) {
+            qDebug() << frameID;
+            String file = getFilePath(frameID).toStdString();
+            if(FileHelpers::fileExisted(file)) {
+                m_StartFrame   = frameID;
+                m_EndFrame     = m_nFrames + m_StartFrame - 1;
+                m_CurrentFrame = m_StartFrame;
+                break;
+            }
+        }
+        ////////////////////////////////////////////////////////////////////////////////
         emit inputSequenceAccepted(dataFolder);
     }
 }
@@ -145,13 +157,13 @@ void DataReader::readNextFrame(bool bBackward /*= false*/) {
         return;
     }
     int nextFrame = (m_bReverse ^ bBackward) ? m_CurrentFrame - m_FrameStep : m_CurrentFrame + m_FrameStep;
-    if(!m_bRepeat && (nextFrame < 0 || nextFrame >= m_nFrames)) {
+    if(!m_bRepeat && (nextFrame < m_StartFrame || nextFrame > m_EndFrame)) {
         return;
     }
-    if(nextFrame < 0) {
-        nextFrame = m_nFrames - 1;
-    } else if(nextFrame >= m_nFrames) {
-        nextFrame = 0;
+    if(nextFrame < m_StartFrame) {
+        nextFrame = m_EndFrame;
+    } else if(nextFrame > m_EndFrame) {
+        nextFrame = m_StartFrame;
     }
     readFrame(nextFrame);
 }
@@ -182,7 +194,6 @@ std::pair<bool, size_t> DataReader::readFrameData(int frameID) {
     size_t nBytesRead = 0;
     UInt   nParticles = 0;
     String file       = getFilePath(frameID).toStdString();
-    qDebug() << file.c_str();
     ////////////////////////////////////////////////////////////////////////////////
     auto readParticles = [&](const auto& fileName, auto& buffer, auto& bSuccess, auto& nBytesRead) {
                              buffer.resize(0);

@@ -74,7 +74,7 @@ public slots:
     void enableReverse(bool bReverse) { m_bReverse = bReverse; }
     void pause(bool bPaused) { m_bPause = bPaused; }
     void readFirstFrame() { readFrame(0); }
-    void readLastFrame() { readFrame(m_nFrames - 1); }
+    void readLastFrame() { readFrame(m_EndFrame); }
     void readNextFrame(bool bBackward = false);
     void readPrevFrame() { readNextFrame(true); }
     void readFrame(int frame);
@@ -83,6 +83,8 @@ private:
     ////////////////////////////////////////////////////////////////////////////////
     int  m_nFrames      = 0;
     int  m_CurrentFrame = 0;
+    int  m_StartFrame   = 0;
+    int  m_EndFrame     = 0;
     int  m_FrameStep    = 1;
     bool m_bPause       = false;
     bool m_bReverse     = false;

@@ -69,6 +69,13 @@ void RenderWidget::updateSystemDimension() {
         m_Camera->setOrthoBox(m_VizData->domainBMin.x * 1.02f, m_VizData->domainBMax.x * 1.02f,
                               m_VizData->domainBMin.y * 1.02f, m_VizData->domainBMax.y * 1.02f);
     }
+    makeCurrent();
+    glCall(glBindVertexArray(m_RDataParticle.VAO));
+    glCall(glEnableVertexAttribArray(m_RDataParticle.v_Position));
+    m_RDataParticle.buffPosition->bind();
+    glCall(glVertexAttribPointer(m_RDataParticle.v_Position, m_VizData->systemDimension, GL_FLOAT, GL_FALSE, 0, reinterpret_cast<GLvoid*>(0)));
+    glCall(glBindVertexArray(0));
+    doneCurrent();
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

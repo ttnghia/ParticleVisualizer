@@ -89,6 +89,9 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
             if(float radius; JSONHelpers::readValue(jVizParams, radius, "OverrideParticleRadius")) {
                 m_chkOverrideParticleRadius->setChecked(true);
                 m_txtParticleRadius->setText(QString("%1").arg(radius));
+            } else {
+                m_chkOverrideParticleRadius->setChecked(false);
+                m_txtParticleRadius->setText(QString(""));
             }
             ////////////////////////////////////////////////////////////////////////////////
             if(String capturePath; JSONHelpers::readValue(jVizParams, capturePath, "CapturePath")) {
@@ -247,7 +250,7 @@ void Controller::connectWidgets() {
                 }
             });
     connect(m_txtParticleRadius, &QLineEdit::textChanged, [&](const QString& txt) {
-                if(m_RenderWidget->getVizData()->bRadiusOverrided) {
+                if(m_RenderWidget->getVizData()->bRadiusOverrided && txt != "") {
                     try {
                         m_RenderWidget->getVizData()->particleRadius = std::stof(txt.toStdString());
                     } catch(std::exception&) {}

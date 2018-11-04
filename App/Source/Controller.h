@@ -27,7 +27,8 @@ class Controller : public OpenGLController {
     friend class MainWindow;
 public:
     explicit Controller(RenderWidget* renderWidget, DataReader* dataReader, QWidget* parent = nullptr, int width = 300);
-    void updateVisualizationParameters(const QString& sceneFile);
+    void loadVizParameters(const QString& sceneFile);
+    void setDefaultVizParameters();
     void setParticleDiffuseColorMode(int colorMode);
     void setMaterial(const MaterialData& materialData);
     void browseOutputPath();
@@ -85,7 +86,7 @@ protected:
     void setupDataPlayerButtons();
     QPushButton* m_btnPause;
     QPushButton* m_btnNextFrame;
-    QPushButton* m_btnReset;
+    QPushButton* m_btnRefresh;
     QPushButton* m_btnReverse;
     QPushButton* m_btnRepeatPlay;
     ////////////////////////////////////////////////////////////////////////////////

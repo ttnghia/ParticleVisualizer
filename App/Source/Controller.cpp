@@ -41,7 +41,7 @@ Controller::Controller(RenderWidget* renderWidget, DataReader* dataReader, QWidg
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-void Controller::updateVisualizationParameters(const QString& sceneFile) {
+void Controller::loadVizParameters(const QString& sceneFile) {
     std::ifstream inFile(sceneFile.toStdString());
     __NT_REQUIRE(inFile.is_open());
     try {
@@ -63,9 +63,10 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
                 JParams jBoxParams = jVizParams["DomainBox"];
                 JSONHelpers::readVector(jBoxParams, m_RenderWidget->getVizData()->domainBMin, "BoxMin");
                 JSONHelpers::readVector(jBoxParams, m_RenderWidget->getVizData()->domainBMax, "BoxMax");
-                m_RenderWidget->setBox(m_RenderWidget->getVizData()->domainBMin, m_RenderWidget->getVizData()->domainBMax);
-                m_RenderWidget->updateSystemDimension();
             }
+            m_RenderWidget->setBox(m_RenderWidget->getVizData()->domainBMin, m_RenderWidget->getVizData()->domainBMax);
+            m_RenderWidget->updateSystemDimension();
+
             if(bool bRender; JSONHelpers::readBool(jVizParams, bRender, "RenderDomainBox")) {
                 this->m_chkRenderBox->setChecked(bRender);
             } else {
@@ -155,6 +156,30 @@ void Controller::updateVisualizationParameters(const QString& sceneFile) {
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void Controller::setDefaultVizParameters() {
+    m_RenderWidget->setBox(m_RenderWidget->getVizData()->domainBMin, m_RenderWidget->getVizData()->domainBMax);
+    m_RenderWidget->updateSystemDimension();
+    this->m_chkRenderBox->setChecked(true);
+    ////////////////////////////////////////////////////////////////////////////////
+    m_RenderWidget->setClearColor(QtAppUtils::getDefaultClearColor());
+    m_RenderWidget->updateCamera(); // default camera values has been set
+    ////////////////////////////////////////////////////////////////////////////////
+    m_chkOverrideParticleRadius->blockSignals(true);
+    m_chkOverrideParticleRadius->setChecked(false);
+    m_chkOverrideParticleRadius->blockSignals(false);
+    m_txtOveridePRadius->setText(QString(""));
+    //    ////////////////////////////////////////////////////////////////////////////////
+    m_OutputPath->setPath(QtAppUtils::getDefaultCapturePath());
+    //    ////////////////////////////////////////////////////////////////////////////////
+    setParticleDiffuseColorMode(static_cast<int>(RenderColorMode::Ramp));
+    setMaterial(DefaultVisualizationParameters::DefaultRenderMaterial);
+    m_LightEditor->changeLights(m_RenderWidget->getVizData()->lights); // default lights have been set
+    //    ////////////////////////////////////////////////////////////////////////////////
+    m_sldFrameDelay->setValue(0);
+    m_sldFrameStep->setValue(1);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void Controller::setParticleDiffuseColorMode(int colorMode) {
     (static_cast<QRadioButton*>(m_smColorMode->mapping(colorMode)))->setChecked(true);
     m_RenderWidget->getVizData()->colorMode = colorMode;
@@ -231,7 +256,9 @@ void Controller::connectWidgets() {
                 dataDir.setNameFilters(QStringList() << "*.json");
                 if(dataDir.entryList().count() != 0) {
                     QString sceneFile = dataPath + "/" + dataDir.entryList()[0];
-                    updateVisualizationParameters(sceneFile);
+                    loadVizParameters(sceneFile);
+                } else {
+                    setDefaultVizParameters();
                 }
             });
     ////////////////////////////////////////////////////////////////////////////////
@@ -261,7 +288,7 @@ void Controller::connectWidgets() {
     // buttons
     connect(m_btnPause,      &QPushButton::clicked, m_DataReader, &DataReader::pause);
     connect(m_btnNextFrame,  &QPushButton::clicked, m_DataReader, &DataReader::readNextFrame);
-    connect(m_btnReset,      &QPushButton::clicked, m_DataReader, &DataReader::readFirstFrame);
+    connect(m_btnRefresh,    &QPushButton::clicked, m_DataReader, &DataReader::refresh);
     connect(m_btnRepeatPlay, &QPushButton::clicked, m_DataReader, &DataReader::enableRepeat);
     connect(m_btnReverse,    &QPushButton::clicked, m_DataReader, &DataReader::enableReverse);
     ////////////////////////////////////////////////////////////////////////////////
@@ -369,7 +396,7 @@ void Controller::setupDataPlayerButtons() {
     m_btnPause = new QPushButton(QString("Pause"));
     m_btnPause->setCheckable(true);
     m_btnNextFrame = new QPushButton(QString("Next Frame"));
-    m_btnReset     = new QPushButton(QString("Reset"));
+    m_btnRefresh   = new QPushButton(QString("Refresh"));
     m_btnReverse   = new QPushButton(QString("Reverse"));
     m_btnReverse->setCheckable(true);
     m_btnRepeatPlay = new QPushButton(QString("Repeat"));
@@ -378,7 +405,7 @@ void Controller::setupDataPlayerButtons() {
     this->m_LayoutButtons->addWidget(QtAppUtils::getLineSeparator(), m_nButtonRows++, 0, 1, 2);
 
     QHBoxLayout* loResetReverseRepeat = new QHBoxLayout;
-    loResetReverseRepeat->addWidget(m_btnReset);
+    loResetReverseRepeat->addWidget(m_btnRefresh);
     loResetReverseRepeat->addWidget(m_btnReverse);
     loResetReverseRepeat->addWidget(m_btnRepeatPlay);
     this->m_LayoutButtons->addLayout(loResetReverseRepeat, m_nButtonRows++, 0, 1, 2);

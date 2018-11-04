@@ -74,7 +74,10 @@ void DataReader::resetData() {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 bool DataReader::analyzeSequence(const QString& sampleFileName) {
-    auto file      = QFileInfo(sampleFileName);
+    auto file = QFileInfo(sampleFileName);
+    if(!file.exists()) {
+        return false;
+    }
     auto prefix    = file.dir().absolutePath().replace("\\\\", "/") + QString("/") + file.baseName();
     auto extension = file.suffix();
     ////////////////////////////////////////////////////////////////////////////////

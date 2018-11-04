@@ -11,13 +11,7 @@
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 
-#include <LibCommon/Geometry/MeshLoader.h>
-#include <LibCommon/Geometry/GeometryObjects.h>
-#include <LibCommon/Utils/JSONHelpers.h>
-
 #include <LibQtApps/AvgTimer.h>
-#include <LibOpenGL/LightAndMaterialData.h>
-
 #include <LibParticle/ParticleHelpers.h>
 
 #include <fstream>

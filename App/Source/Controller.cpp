@@ -13,11 +13,8 @@
 
 #include <LibCommon/Utils/NumberHelpers.h>
 #include <LibCommon/Utils/JSONHelpers.h>
-#include <LibCommon/Geometry/GeometryObjects.h>
 
 #include <LibQtApps/BrowsePathWidget.h>
-#include <LibQtApps/ColorPicker.h>
-#include <LibQtApps/EnhancedComboBox.h>
 #include <LibQtApps/EnhancedSlider.h>
 #include <LibQtApps/MaterialSelector.h>
 #include <LibQtApps/PointLightEditor.h>

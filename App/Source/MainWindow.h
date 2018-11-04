@@ -32,7 +32,7 @@ public slots:
     void updateStatusCurrentFrame(int currentFrame);
     void updateStatusNumParticles();
     void updateNumFrames(int numFrames);
-    void updateStatusReadInfo(double readTime, size_t bytes);
+    void updateStatusReadInfo(double readTime, unsigned int bytes);
     void updateStatusMemoryUsage();
 
 private:

@@ -134,7 +134,7 @@ void MainWindow::updateNumFrames(int numFrames) {
     m_lblStatusNumFrames->setText(QString("Total frames: %1").arg(numFrames));
 }
 
-void MainWindow::updateStatusReadInfo(double readTime, size_t bytes) {
+void MainWindow::updateStatusReadInfo(double readTime, unsigned int bytes) {
     m_lblStatusReadInfo->setText(QString("Load data: %1 (ms) | %2 (MBs)").arg(readTime).arg(static_cast<double>(bytes) / 1048576.0));
 }
 

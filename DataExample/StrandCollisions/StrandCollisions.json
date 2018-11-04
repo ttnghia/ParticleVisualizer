@@ -1,0 +1,31 @@
+{
+    "VisualizationParameters": {
+        "Dimension": 2,
+        "DomainBox": {
+            "BoxMin": [-2, 0],
+            "BoxMax": [2, 1.5]
+        },
+        "RenderDomainBox": false,
+        "CameraPosition": [0.5, 0.75, -0.85],
+        "CameraFocus": [0.5, 0.35, 0.7],
+        "CapturePath": "Capture",
+        "FrameDelay": 20,
+        "OverrideParticleRadius": 0.005,
+        "ColorAndMaterial": {
+            "ColorMode": "Ramp"
+        },
+        "Lights": [{
+                "Position": [-10, 10, -10],
+                "Diffuse": [1, 1, 1]
+            },
+            {
+                "Position": [10, 10, 10],
+                "Diffuse": [1, 1, 1]
+            },
+            {
+                "Position": [0, 20, 10],
+                "Diffuse": [0.5, 0.5, 0.5]
+            }
+        ]
+    }
+}

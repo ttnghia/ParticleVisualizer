@@ -211,17 +211,18 @@ void DataReader::readFrame(int frame) {
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 std::pair<bool, UInt> DataReader::readFrameData(int frameID) {
-    bool   bSuccess   = false;
-    UInt   nBytesRead = 0;
-    UInt   nParticles = 0;
-    String file       = getFilePath(frameID).toStdString();
+    bool   bSuccess       = false;
+    UInt   nBytesRead     = 0;
+    UInt   nParticles     = 0;
+    float  particleRadius = 0;
+    String file           = getFilePath(frameID).toStdString();
     ////////////////////////////////////////////////////////////////////////////////
     auto readParticles = [&](const auto& fileName, auto& buffer, auto& bSuccess, auto& nBytesRead) {
                              buffer.resize(0);
                              if(m_FileExtension == FileExtensions::BGEO) {
-                                 bSuccess = ParticleHelpers::loadParticlesFromBGEO(fileName, buffer, m_VizData->particleRadius);
+                                 bSuccess = ParticleHelpers::loadParticlesFromBGEO(fileName, buffer, particleRadius);
                              } else if(m_FileExtension == FileExtensions::BIN) {
-                                 bSuccess = ParticleHelpers::loadParticlesFromBinary(fileName, buffer, m_VizData->particleRadius);
+                                 bSuccess = ParticleHelpers::loadParticlesFromBinary(fileName, buffer, particleRadius);
                              } else {
                                  bSuccess = ParticleHelpers::loadParticlesFromObj(fileName, buffer);
                              }
@@ -236,16 +237,21 @@ std::pair<bool, UInt> DataReader::readFrameData(int frameID) {
         readParticles(file, m_VizData->buffPositions2D, bSuccess, nBytesRead);
         m_VizData->particlePositionPtrs = reinterpret_cast<char*>(m_VizData->buffPositions2D.data());
     }
-    if(!m_VizData->bRadiusOverrided && m_VizData->particleRadius < float(1.0e-10)) {
-        m_VizData->computeParticleRadius();
-        particleRadiusChanged(m_VizData->particleRadius);
+    ////////////////////////////////////////////////////////////////////////////////
+    if(!m_VizData->bRadiusOverrided) {
+        if(particleRadius < float(1.0e-10)) {
+            m_VizData->computeParticleRadius();
+        } else if(std::abs(m_VizData->particleRadius - particleRadius) > 1e-10) {
+            m_VizData->particleRadius = particleRadius;
+            emit particleRadiusChanged(m_VizData->particleRadius);
+        }
     }
     ////////////////////////////////////////////////////////////////////////////////
     if(nParticles != m_VizData->nParticles) {
         m_VizData->nParticles = nParticles;
         emit numVizPrimitivesChanged();
     }
-
+    ////////////////////////////////////////////////////////////////////////////////
     if(!bSuccess) {
         return { false, 0 };
     } else {

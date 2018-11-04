@@ -84,13 +84,19 @@ void Controller::loadVizParameters(const QString& sceneFile) {
             }
             m_RenderWidget->updateCamera();
             ////////////////////////////////////////////////////////////////////////////////
+            m_chkOverrideParticleRadius->blockSignals(true);
             if(float radius; JSONHelpers::readValue(jVizParams, radius, "OverrideParticleRadius")) {
                 m_chkOverrideParticleRadius->setChecked(true);
+                m_RenderWidget->getVizData()->bRadiusOverrided = true;
+                m_RenderWidget->getVizData()->particleRadius   = radius;
+                m_txtOveridePRadius->blockSignals(true);
                 m_txtOveridePRadius->setText(QString("%1").arg(radius));
+                m_txtOveridePRadius->blockSignals(false);
             } else {
                 m_chkOverrideParticleRadius->setChecked(false);
                 m_txtOveridePRadius->setText(QString(""));
             }
+            m_chkOverrideParticleRadius->blockSignals(false);
             ////////////////////////////////////////////////////////////////////////////////
             if(String capturePath; JSONHelpers::readValue(jVizParams, capturePath, "CapturePath")) {
                 m_OutputPath->setPath(QString::fromStdString(capturePath));
@@ -248,6 +254,7 @@ void Controller::connectWidgets() {
     connect(m_InputPath,  &BrowsePathWidget::pathChanged,     m_DataReader, &DataReader::setSequenceFile);
     connect(m_DataReader, &DataReader::inputSequenceAccepted, [&](const QString& dataPath) {
                 m_btnPause->setChecked(false);
+                m_txtEstimatePRadius->setText("");
                 ////////////////////////////////////////////////////////////////////////////////
                 QDir dataDir(dataPath);
                 dataDir.setNameFilters(QStringList() << "*.json");
@@ -266,7 +273,10 @@ void Controller::connectWidgets() {
                 m_RenderWidget->getVizData()->bRadiusOverrided = bChecked;
                 if(bChecked) {
                     try {
-                        m_RenderWidget->getVizData()->particleRadius = std::stof(m_txtOveridePRadius->text().toStdString());
+                        auto tmp = std::stof(m_txtOveridePRadius->text().toStdString());
+                        if(tmp > 0) {
+                            m_RenderWidget->getVizData()->particleRadius = tmp;
+                        }
                     } catch(std::exception&) {}
                 } else {
                     m_DataReader->computeParticleRadius();
@@ -275,7 +285,10 @@ void Controller::connectWidgets() {
     connect(m_txtOveridePRadius, &QLineEdit::textChanged, [&](const QString& txt) {
                 if(m_RenderWidget->getVizData()->bRadiusOverrided && txt != "") {
                     try {
-                        m_RenderWidget->getVizData()->particleRadius = std::stof(txt.toStdString());
+                        auto tmp = std::stof(txt.toStdString());
+                        if(tmp > 0) {
+                            m_RenderWidget->getVizData()->particleRadius = tmp;
+                        }
                     } catch(std::exception&) {}
                 }
             });

@@ -207,8 +207,12 @@ void MainWindow::connectWidgets() {
     connect(m_DataReader, &DataReader::inputSequenceAccepted,   this,           &MainWindow::updateWindowTitle);
     connect(m_DataReader, &DataReader::vizDataChanged,          m_RenderWidget, &RenderWidget::updateVizData);
     ////////////////////////////////////////////////////////////////////////////////
-    connect(m_DataReader, &DataReader::particleRadiusChanged,   m_Controller,   &Controller::setParticleRadius);
-    connect(m_DataList,   &DataList::currentTextChanged,        m_Controller,   &Controller::setInputPath);
+    connect(m_DataReader, &DataReader::particleRadiusChanged,   [&](float radius) {
+                m_Controller->blockSignals(true);
+                m_Controller->setParticleRadius(radius);
+                m_Controller->blockSignals(false);
+            });
+    connect(m_DataList, &DataList::currentTextChanged, m_Controller, &Controller::setInputPath);
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+

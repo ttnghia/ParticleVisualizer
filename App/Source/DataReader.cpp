@@ -57,6 +57,15 @@ void DataReader::setSequenceFile(const QString& sampleFileName) {
 }
 
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+void DataReader::computeParticleRadius() {
+    if(m_ReadFrameFutureObj.isRunning()) {
+        m_ReadFrameFutureObj.waitForFinished();
+    }
+    m_VizData->computeParticleRadius();
+    particleRadiusChanged(m_VizData->particleRadius);
+}
+
+//-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 void DataReader::resetData() {
     m_bValidDataPath = false;
     m_VizData->resetData();

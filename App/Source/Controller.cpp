@@ -245,8 +245,7 @@ void Controller::connectWidgets() {
                         m_RenderWidget->getVizData()->particleRadius = std::stof(m_txtParticleRadius->text().toStdString());
                     } catch(std::exception&) {}
                 } else {
-                    m_RenderWidget->getVizData()->particleRadius = 0;
-                    m_RenderWidget->getVizData()->computeParticleRadius();
+                    m_DataReader->computeParticleRadius();
                 }
             });
     connect(m_txtParticleRadius, &QLineEdit::textChanged, [&](const QString& txt) {

@@ -31,6 +31,7 @@ public:
     DataReader(const SharedPtr<VisualizationData>& vizData);
     void setSequenceFile(const QString& sampleFileName);
     void refresh() { setSequenceFile(m_SampleFileName); }
+    void computeParticleRadius();
 
 signals:
     void inputSequenceAccepted(const QString& dataFolder);

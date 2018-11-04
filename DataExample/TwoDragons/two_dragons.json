@@ -1,0 +1,36 @@
+{
+    "VisualizationParameters": {
+        "DomainBox": {
+            "BoxMin": [-0.3, 0, -0.5],
+            "BoxMax": [0.7, 1, 1.5]
+        },
+        "RenderDomainBox": true,
+        "CameraPosition": [1.15, 0.5, 0.7],
+        "CameraFocus": [0, 0.25, 0.7],
+        "CapturePath": "Capture",
+        "FrameDelay": 20,
+        "OverrideParticleRadius": 0.002,
+        "ColorAndMaterial": {
+            "ColorMode": "Uniform",
+            "Material": {
+                "Ambient": [0.329412, 0.223529, 0.027451],
+                "Diffuse": [0.780392, 0.568627, 0.113725],
+                "Specular": [0.992157, 0.941176, 0.807843],
+                "Shininess": 30
+            }
+        },
+        "Lights": [{
+                "Position": [-10, 10, -10],
+                "Diffuse": [1, 1, 1]
+            },
+            {
+                "Position": [10, 10, 10],
+                "Diffuse": [1, 1, 1]
+            },
+            {
+                "Position": [0, -10, 0],
+                "Diffuse": [0.7, 0.7, 0.7]
+            }
+        ]
+    }
+}

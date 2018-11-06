@@ -75,7 +75,7 @@ void DataReader::resetData() {
     m_CurrentFrame = -1;
     m_nFrames      = 0;
     m_bPause       = false;
-    emit numFramesChanged(0);
+    emit numFramesChanged(0, 0);
     ////////////////////////////////////////////////////////////////////////////////
     if(m_WatchingPath != "") {
         m_DataDirWatcher->removePath(m_WatchingPath);
@@ -160,7 +160,7 @@ void DataReader::countFrames() {
     }
     if(nFrames != m_nFrames) {
         m_nFrames = nFrames;
-        emit numFramesChanged(m_nFrames);
+        emit numFramesChanged(m_StartFrame, m_nFrames);
     }
     m_EndFrame = m_StartFrame + m_nFrames - 1;
     if(m_CurrentFrame > m_EndFrame) {

@@ -67,7 +67,7 @@ private:
     // frames
 signals:
     void particleRadiusChanged(float radius);
-    void numFramesChanged(int numFrames);
+    void numFramesChanged(int startFrame, int numFrames);
     void currentFrameChanged(int currentFrame);
     void frameReadInfoChanged(double readTime, unsigned int bytes);
 

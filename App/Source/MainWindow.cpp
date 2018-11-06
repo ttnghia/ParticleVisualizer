@@ -139,8 +139,8 @@ void MainWindow::updateStatusNumParticles() {
     m_lblStatusNumVizPrimitives->setText(QString::fromStdString(status));
 }
 
-void MainWindow::updateNumFrames(int numFrames) {
-    m_sldFrame->setRange(0, numFrames - 1);
+void MainWindow::updateNumFrames(int startFrame, int numFrames) {
+    m_sldFrame->setRange(startFrame, startFrame + numFrames - 1);
     m_lblStatusNumFrames->setText(QString("Total frames: %1").arg(numFrames));
 }
 

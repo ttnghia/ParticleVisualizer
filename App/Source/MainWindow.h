@@ -32,7 +32,7 @@ public slots:
     void updateWindowTitle(const QString& filePath);
     void updateStatusCurrentFrame(int currentFrame);
     void updateStatusNumParticles();
-    void updateNumFrames(int numFrames);
+    void updateNumFrames(int startFrame, int numFrames);
     void updateStatusReadInfo(double readTime, unsigned int bytes);
     void updateStatusMemoryUsage();
 

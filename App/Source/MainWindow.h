@@ -16,6 +16,7 @@
 #include <LibQtApps/OpenGLMainWindow.h>
 #include "Forward.h"
 
+using namespace  NTCodeBase;
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 class MainWindow : public OpenGLMainWindow {
     Q_OBJECT

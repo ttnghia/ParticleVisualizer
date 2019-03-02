@@ -15,6 +15,7 @@
 #include <LibCommon/CommonSetup.h>
 #include <LibOpenGL/LightAndMaterialData.h>
 
+using namespace  NTCodeBase;
 //-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
 struct RenderColorMode {
     enum {

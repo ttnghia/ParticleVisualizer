@@ -49,6 +49,7 @@ bool MainWindow::processKeyPressEvent(QKeyEvent* event) {
         case Qt::Key_Escape:
             m_DataReader->stopDataReader();
             OpenGLMainWindow::processKeyPressEvent(event);
+            return true;
 
         case Qt::Key_B:
             m_Controller->browseInputPath();

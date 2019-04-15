@@ -49,7 +49,7 @@ private:
         Width3_0Prefix,
         Width4_0Prefix
     };
-    enum class FileExtensions { BIN, BGEO, OBJ };
+    enum class FileExtensions { BIN, BGEO, BGEO_GZ, OBJ };
     ////////////////////////////////////////////////////////////////////////////////
     EnumerateTypes      m_EnumerateType    = EnumerateTypes::NoPrefix;
     FileExtensions      m_FileExtension    = FileExtensions::BGEO;
@@ -58,9 +58,9 @@ private:
     QFileSystemWatcher* m_DataDirWatcher   = new QFileSystemWatcher;
 
     SharedPtr<VisualizationData> m_VizData;
-    QString                      m_SampleFileName;
-    QString                      m_DataSequencePrefix;
-    QString                      m_WatchingPath;
+    QString m_SampleFileName;
+    QString m_DataSequencePrefix;
+    QString m_WatchingPath;
     ////////////////////////////////////////////////////////////////////////////////
 
     ////////////////////////////////////////////////////////////////////////////////

@@ -101,6 +101,9 @@ bool DataReader::analyzeSequence(const QString& sampleFileName) {
     } else if(extension.toUpper() == "BGEO") {
         m_FileExtension    = FileExtensions::BGEO;
         m_FileExtensionStr = QString(".bgeo");
+    } else if(extension.toUpper() == "GZ") {
+        m_FileExtension    = FileExtensions::BGEO_GZ;
+        m_FileExtensionStr = QString(".bgeo.gz");
     } else if(extension.toUpper() == "OBJ") {
         m_FileExtension    = FileExtensions::OBJ;
         m_FileExtensionStr = QString(".obj");
@@ -219,7 +222,7 @@ std::pair<bool, UInt> DataReader::readFrameData(int frameID) {
     ////////////////////////////////////////////////////////////////////////////////
     auto readParticles = [&](const auto& fileName, auto& buffer, auto& bSuccess, auto& nBytesRead) {
                              buffer.resize(0);
-                             if(m_FileExtension == FileExtensions::BGEO) {
+                             if(m_FileExtension == FileExtensions::BGEO || m_FileExtension == FileExtensions::BGEO_GZ) {
                                  bSuccess = ParticleHelpers::loadParticlesFromBGEO(fileName, buffer, particleRadius);
                              } else if(m_FileExtension == FileExtensions::BIN) {
                                  bSuccess = ParticleHelpers::loadParticlesFromBinary(fileName, buffer, particleRadius);
